@@ -27,7 +27,7 @@ from common.zpipe import AsyncZSocket, ZPipe
 from common.urdf_parser import URDFParser
 from util.logger.console import ConsoleLogger
 from .geometry_model import GeometryTableModel  # geometry model handling
-from .tcpview_model import TCPViewTableModel  # tcp view model handling
+# from .tcpview_model import TCPViewTableModel  # tcp view model handling
 
 """ Global variables """
 # DO not change this value unless necessary
@@ -44,7 +44,7 @@ class AppWindow(QMainWindow):
 
         # Initialize table models
         self.__geometry_model = GeometryTableModel()
-        self.__tcpview_model = TCPViewTableModel()
+        # self.__tcpview_model = TCPViewTableModel()
 
         try:            
             if "gui" in config:
@@ -99,7 +99,7 @@ class AppWindow(QMainWindow):
                     self.__geometry_model.geometryTransformChanged.connect(self.on_geometry_transform_changed)
 
                     # Setup TCP view table
-                    self.table_tcpview.setModel(self.__tcpview_model)
+                    # self.table_tcpview.setModel(self.__tcpview_model)
 
                     
                     # Enable delete key functionality for geometry table
