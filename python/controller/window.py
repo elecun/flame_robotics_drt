@@ -27,6 +27,7 @@ from common.zpipe import AsyncZSocket, ZPipe
 from common.urdf_parser import URDFParser
 from util.logger.console import ConsoleLogger
 from .geometry_model import GeometryTableModel  # geometry model handling
+# from .tcpview_model import TCPViewTableModel  # tcp view model handling
 
 """ Global variables """
 # DO not change this value unless necessary
@@ -41,8 +42,9 @@ class AppWindow(QMainWindow):
         self.__console = ConsoleLogger.get_logger()
         self.__config = config
 
-        # Initialize geometry table model
+        # Initialize table models
         self.__geometry_model = GeometryTableModel()
+        # self.__tcpview_model = TCPViewTableModel()
 
         try:            
             if "gui" in config:
@@ -95,6 +97,10 @@ class AppWindow(QMainWindow):
                     # Setup geometry table
                     self.table_geometry.setModel(self.__geometry_model)
                     self.__geometry_model.geometryTransformChanged.connect(self.on_geometry_transform_changed)
+
+                    # Setup TCP view table
+                    # self.table_tcpview.setModel(self.__tcpview_model)
+
                     
                     # Enable delete key functionality for geometry table
                     self.table_geometry.keyPressEvent = self.on_geometry_table_key_press
@@ -141,13 +147,8 @@ class AppWindow(QMainWindow):
                 topic = multipart_data[0]
                 msg = multipart_data[1]
                 self.__call(topic, msg)
-                self._window.post_redraw()  # Redraw the GUI after processing the message
         except Exception as e:
             self.__console.error(f"({self.__class__.__name__}) Error processing received data: {e}")
-
-    
-
-
     
     def closeEvent(self, event:QCloseEvent) -> None:
         """ Handle close event """

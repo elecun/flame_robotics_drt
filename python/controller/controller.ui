@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>805</width>
-    <height>646</height>
+    <height>773</height>
    </rect>
   </property>
   <property name="font">
@@ -124,7 +124,7 @@ background-color: rgb(212, 212, 212);</string>
     <property name="geometry">
      <rect>
       <x>450</x>
-      <y>555</y>
+      <y>685</y>
       <width>166</width>
       <height>31</height>
      </rect>
@@ -150,7 +150,7 @@ background-color: rgb(100,255,100);</string>
     <property name="geometry">
      <rect>
       <x>625</x>
-      <y>555</y>
+      <y>685</y>
       <width>166</width>
       <height>31</height>
      </rect>
@@ -178,7 +178,7 @@ background-color: rgb(255, 100, 100);</string>
       <x>10</x>
       <y>140</y>
       <width>786</width>
-      <height>401</height>
+      <height>531</height>
      </rect>
     </property>
     <property name="font">
@@ -187,7 +187,7 @@ background-color: rgb(255, 100, 100);</string>
      </font>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -336,7 +336,7 @@ background-color: rgb(255, 100, 100);</string>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
-      <string>Manual Control</string>
+      <string>Manipulator</string>
      </attribute>
      <widget class="QGroupBox" name="groupBox_3">
       <property name="geometry">
@@ -348,7 +348,7 @@ background-color: rgb(255, 100, 100);</string>
        </rect>
       </property>
       <property name="title">
-       <string>Joint Control</string>
+       <string>Joint Move</string>
       </property>
       <widget class="QLabel" name="label_rt_1">
        <property name="geometry">
@@ -1117,6 +1117,57 @@ background-color: rgb(255, 100, 100);</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_6">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>370</y>
+        <width>761</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>TCP Move</string>
+      </property>
+      <widget class="QTableView" name="table_tcp_move">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>741</width>
+         <height>81</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_4">
+     <attribute name="title">
+      <string>Positioner</string>
+     </attribute>
+     <widget class="QGroupBox" name="groupBox_5">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>761</width>
+        <height>126</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Positioner Control</string>
+      </property>
+      <widget class="QTableView" name="table_pr_move">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>741</width>
+         <height>81</height>
+        </rect>
        </property>
       </widget>
      </widget>
