@@ -127,7 +127,7 @@ class Open3DVisualizer(geometryAPI):
                 function = getattr(super(), function_name)
                 kwargs = msg_decoded["kwargs"]
                 function(self._scene, **kwargs)
-
+                self._window.post_redraw()
             except json.JSONDecodeError as e:
                 self.__console.error(f"({self.__class__.__name__}) {e}")
             except Exception as e:
