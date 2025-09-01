@@ -294,7 +294,7 @@ class Kinematics:
                 'transform': final_T.tolist()
             }
             
-            self.__console.debug(f"FK for {robot_name}: pos={position}, ori_deg={np.rad2deg(orientation_rad)}")
+            # self.__console.debug(f"FK for {robot_name}: pos={position}, ori_deg={np.rad2deg(orientation_rad)}")
             return result
             
         except Exception as e:
@@ -492,3 +492,56 @@ class Kinematics:
             if fk_result:
                 results[robot_name] = fk_result
         return results
+    
+    def get_joint_limits(self, robot_name: str):
+        """
+        Get joint limits for specified robot
+        
+        Args:
+            robot_name: Name of the robot
+            
+        Returns:
+            dict: Dictionary with joint names as keys and {'lower': float, 'upper': float} as values
+        """
+        if robot_name not in self.__robots:
+            self.__console.error(f"Robot {robot_name} not found")
+            return {}
+            
+        if PINOCCHIO_AVAILABLE:
+            robot_data = self.__robots[robot_name]
+            pin_model = robot_data['pin_model']
+            joint_names = robot_data['joint_names']
+            joint_limits = {}
+            
+            for i, joint_name in enumerate(joint_names):
+                # pinocchio joint indices start from 1 (0 is universe joint)
+                joint_idx = i + 1
+                if joint_idx < pin_model.nq:
+                    joint_limits[joint_name] = {
+                        'lower': float(pin_model.lowerPositionLimit[joint_idx]),
+                        'upper': float(pin_model.upperPositionLimit[joint_idx])
+                    }
+            
+            return joint_limits
+        else:
+            # Fallback to URDF parser method
+            robot_data = self.__robots[robot_name]
+            urdf_model = robot_data['urdf_model']
+            joint_names = robot_data['joint_names']
+            joint_limits = {}
+            
+            for joint_name in joint_names:
+                joint = urdf_model.joint_map.get(joint_name)
+                if joint and joint.limit:
+                    joint_limits[joint_name] = {
+                        'lower': joint.limit.lower,
+                        'upper': joint.limit.upper
+                    }
+                else:
+                    # Default limits if not specified
+                    joint_limits[joint_name] = {
+                        'lower': -3.14159,
+                        'upper': 3.14159
+                    }
+            
+            return joint_limits
