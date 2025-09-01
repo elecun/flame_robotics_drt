@@ -1194,6 +1194,28 @@ background-color: rgb(212, 212, 212);</string>
        <string>Move Stop</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="btn_set_initial_pose">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>505</y>
+        <width>141</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>NanumSquare</family>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0,0,0);
+background-color: rgb(212, 212, 212);</string>
+      </property>
+      <property name="text">
+       <string>Set Initial Pose</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_4">
      <attribute name="title">
