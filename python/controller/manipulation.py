@@ -385,6 +385,8 @@ class Kinematics:
                 pose_error = pin.log6(current_pose.inverse() * target_se3)
                 error = np.linalg.norm(pose_error.vector)
                 
+                print(f"Iteration {iteration+1}: error={error:.6f}")
+                
                 if error < tolerance:
                     break
                 
@@ -545,3 +547,138 @@ class Kinematics:
                     }
             
             return joint_limits
+
+    def compute_ik_with_callback(self, robot_name: str, target_position: list, target_orientation: list = None, 
+                               iteration_callback=None, initial_joint_config: dict = None, 
+                               max_iterations: int = 1000, tolerance: float = 1e-6):
+        """
+        Compute inverse kinematics with callback function for iteration updates
+        
+        Args:
+            robot_name: Name of the robot
+            target_position: Target position [x, y, z]
+            target_orientation: Target orientation [rx, ry, rz] in radians (optional)
+            iteration_callback: Function called at each iteration with (iteration, joint_angles, error)
+            initial_joint_config: Initial joint configuration for IK solver
+            max_iterations: Maximum iterations for IK solver
+            tolerance: Convergence tolerance
+            
+        Returns:
+            dict: {'joint_angles': {joint_name: angle}, 'success': bool, 'error': float, 'iterations': int}
+            Returns None if robot not found or IK fails
+        """
+        if robot_name not in self.__robots:
+            self.__console.error(f"Robot {robot_name} not found")
+            return None
+            
+        robot_info = self.__robots[robot_name]
+        
+        # Only pinocchio supports IK directly
+        if robot_info['type'] != 'pinocchio':
+            self.__console.warning(f"Inverse kinematics only available with pinocchio backend")
+            return None
+            
+        try:
+            pin_model = robot_info['pin_model']
+            pin_data = robot_info['pin_data']
+            base_T = robot_info['base_transform']
+            
+            # Create target transform matrix
+            target_T = np.eye(4)
+            target_T[:3, 3] = target_position
+            
+            if target_orientation is not None:
+                target_R = rotations.Rotation.from_euler('xyz', target_orientation).as_matrix()
+                target_T[:3, :3] = target_R
+            else:
+                # If no orientation specified, use current orientation
+                current_fk = self.compute_fk(robot_name)
+                if current_fk:
+                    current_T = np.array(current_fk['transform'])
+                    target_T[:3, :3] = current_T[:3, :3]
+            
+            # Apply inverse base transform
+            target_T_local = np.linalg.inv(base_T) @ target_T
+            
+            # Initial joint configuration
+            if initial_joint_config is None:
+                initial_joint_config = self.__joint_configs[robot_name]
+            
+            # Create initial configuration vector
+            q_init = np.zeros(pin_model.nq)
+            joint_names = robot_info['joint_names']
+            
+            for i, joint_name in enumerate(joint_names):
+                if i + 1 < len(q_init):
+                    q_init[i + 1] = initial_joint_config.get(joint_name, 0.0)
+            
+            # Get end-effector frame ID
+            end_effector_frame_id = pin_model.nframes - 1
+            
+            # Create target SE3 object
+            target_se3 = pin.SE3(target_T_local[:3, :3], target_T_local[:3, 3])
+            
+            # Solve IK using CLIK (Closed-Loop Inverse Kinematics)
+            q_result = q_init.copy()
+            error = float('inf')
+            
+            for iteration in range(max_iterations):
+                # Compute forward kinematics
+                pin.forwardKinematics(pin_model, pin_data, q_result)
+                pin.updateFramePlacements(pin_model, pin_data)
+                
+                # Get current end-effector pose
+                current_pose = pin_data.oMf[end_effector_frame_id]
+                
+                # Compute error
+                pose_error = pin.log6(current_pose.inverse() * target_se3)
+                error = np.linalg.norm(pose_error.vector)
+                
+                # Extract current joint angles for callback
+                current_joint_angles = {}
+                for i, joint_name in enumerate(joint_names):
+                    if i + 1 < len(q_result):
+                        current_joint_angles[joint_name] = q_result[i + 1]
+                
+                # Call iteration callback if provided
+                if iteration_callback:
+                    should_continue = iteration_callback(iteration, current_joint_angles, error)
+                    if should_continue is False:
+                        self.__console.info("IK computation stopped by callback")
+                        break
+                
+                if error < tolerance:
+                    break
+                
+                # Compute Jacobian
+                pin.computeFrameJacobian(pin_model, pin_data, q_result, end_effector_frame_id)
+                J = pin_data.J
+                
+                # Damped least squares solution
+                lambda_damping = 0.01  # Damping parameter
+                J_damped = J.T @ np.linalg.inv(J @ J.T + lambda_damping**2 * np.eye(J.shape[0]))
+                dq = J_damped @ pose_error.vector
+                
+                # Update configuration
+                q_result = pin.integrate(pin_model, q_result, dq)
+            
+            # Extract joint angles from result
+            joint_angles = {}
+            for i, joint_name in enumerate(joint_names):
+                if i + 1 < len(q_result):
+                    joint_angles[joint_name] = q_result[i + 1]
+            
+            success = error < tolerance
+            
+            self.__console.debug(f"IK with callback for {robot_name}: iterations={iteration+1}, error={error:.6f}, success={success}")
+            
+            return {
+                'joint_angles': joint_angles,
+                'success': success,
+                'error': error,
+                'iterations': iteration + 1
+            }
+            
+        except Exception as e:
+            self.__console.error(f"Failed to compute inverse kinematics with callback for {robot_name}: {e}")
+            return None
