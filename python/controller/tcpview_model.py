@@ -220,6 +220,10 @@ class TCPViewTableModel(QAbstractTableModel):
         """Get list of all robot names in the table"""
         return list(self.tcp_data.keys())
     
+    def get_all_tcp_data(self):
+        """Get all TCP data for all robots"""
+        return self.tcp_data.copy()
+
     def reset_tcp_to_origin(self, robot_name: str = None):
         """Reset TCP to origin (0,0,0) position and orientation"""
         if robot_name:

@@ -385,6 +385,8 @@ class Kinematics:
                 pose_error = pin.log6(current_pose.inverse() * target_se3)
                 error = np.linalg.norm(pose_error.vector)
                 
+                print(f"Iteration {iteration+1}: error={error:.6f}")
+                
                 if error < tolerance:
                     break
                 
@@ -545,3 +547,250 @@ class Kinematics:
                     }
             
             return joint_limits
+
+    def compute_ik_with_callback(self, robot_name: str, target_position: list, target_orientation: list = None, 
+                               iteration_callback=None, initial_joint_config: dict = None, 
+                               max_iterations: int = 1000, tolerance: float = 1e-6):
+        """
+        Compute inverse kinematics with callback function for iteration updates
+        
+        Args:
+            robot_name: Name of the robot
+            target_position: Target position [x, y, z]
+            target_orientation: Target orientation [rx, ry, rz] in radians (optional)
+            iteration_callback: Function called at each iteration with (iteration, joint_angles, error)
+            initial_joint_config: Initial joint configuration for IK solver
+            max_iterations: Maximum iterations for IK solver
+            tolerance: Convergence tolerance
+            
+        Returns:
+            dict: {'joint_angles': {joint_name: angle}, 'success': bool, 'error': float, 'iterations': int}
+            Returns None if robot not found or IK fails
+        """
+        if robot_name not in self.__robots:
+            self.__console.error(f"Robot {robot_name} not found")
+            return None
+            
+        robot_info = self.__robots[robot_name]
+        
+        # Only pinocchio supports IK directly
+        if robot_info['type'] != 'pinocchio':
+            self.__console.warning(f"Inverse kinematics only available with pinocchio backend")
+            return None
+            
+        try:
+            pin_model = robot_info['pin_model']
+            pin_data = robot_info['pin_data']
+            base_T = robot_info['base_transform']
+            
+            # Create target transform matrix
+            target_T = np.eye(4)
+            target_T[:3, 3] = target_position
+            
+            if target_orientation is not None:
+                target_R = rotations.Rotation.from_euler('xyz', target_orientation).as_matrix()
+                target_T[:3, :3] = target_R
+            else:
+                # If no orientation specified, use current orientation
+                current_fk = self.compute_fk(robot_name)
+                if current_fk:
+                    current_T = np.array(current_fk['transform'])
+                    target_T[:3, :3] = current_T[:3, :3]
+            
+            # Apply inverse base transform
+            target_T_local = np.linalg.inv(base_T) @ target_T
+            
+            # Debug: Print initial and target information for callback version
+            self.__console.info(f"IK Setup for {robot_name} (with callback):")
+            self.__console.info(f"Target position (global): [{target_position[0]:.3f}, {target_position[1]:.3f}, {target_position[2]:.3f}]")
+            self.__console.info(f"Target position (local):  [{target_T_local[0,3]:.3f}, {target_T_local[1,3]:.3f}, {target_T_local[2,3]:.3f}]")
+            if target_orientation is not None:
+                self.__console.info(f"Target orientation: [{target_orientation[0]:.3f}, {target_orientation[1]:.3f}, {target_orientation[2]:.3f}] rad")
+            
+            # Basic workspace check - rough estimation
+            target_distance = np.linalg.norm(target_T_local[:3, 3])
+            estimated_reach = 2.0  # Rough estimate for typical 6DOF arm reach (meters)
+            
+            if target_distance > estimated_reach:
+                self.__console.warning(f"Target may be outside workspace: distance={target_distance:.3f}m > estimated_reach={estimated_reach:.3f}m")
+                self.__console.info("Consider using a closer target position")
+            else:
+                self.__console.info(f"Target within estimated workspace: distance={target_distance:.3f}m")
+            
+            # Check current end-effector position before starting
+            initial_fk = self.compute_fk(robot_name)
+            if initial_fk:
+                current_pos = initial_fk['position']
+                initial_error = np.linalg.norm(np.array(current_pos) - np.array(target_position))
+                self.__console.info(f"Initial end-effector position: [{current_pos[0]:.3f}, {current_pos[1]:.3f}, {current_pos[2]:.3f}]")
+                self.__console.info(f"Initial position error: {initial_error:.6f} m")
+            
+            # Initial joint configuration
+            if initial_joint_config is None:
+                initial_joint_config = self.__joint_configs[robot_name]
+            
+            # Create initial configuration vector
+            q_init = np.zeros(pin_model.nq)
+            joint_names = robot_info['joint_names']
+            
+            # Debug: Print initial joint configuration
+            self.__console.info(f"Initial joint configuration for {robot_name}:")
+            for i, joint_name in enumerate(joint_names):
+                if i + 1 < len(q_init):
+                    joint_value = initial_joint_config.get(joint_name, 0.0)
+                    q_init[i + 1] = joint_value
+                    self.__console.info(f"  {joint_name}: {joint_value:.4f} rad ({np.rad2deg(joint_value):.1f}°)")
+                    
+            # Print q_init vector
+            self.__console.info(f"q_init vector (size {len(q_init)}): {q_init[:min(10, len(q_init))]}")  # First 10 elements only
+            
+            # Get end-effector frame ID
+            end_effector_frame_id = pin_model.nframes - 1
+            
+            # Create target SE3 object
+            target_se3 = pin.SE3(target_T_local[:3, :3], target_T_local[:3, 3])
+            
+            # Early termination if target is too far
+            if target_distance > estimated_reach * 1.2:  # Allow some margin
+                self.__console.error(f"Target definitely outside workspace, aborting IK")
+                return {
+                    'joint_angles': {},
+                    'success': False,
+                    'error': target_distance,
+                    'iterations': 0
+                }
+            
+            # Solve IK using CLIK (Closed-Loop Inverse Kinematics)
+            q_result = q_init.copy()
+            error = float('inf')
+            prev_error = float('inf')
+            stagnation_count = 0
+            prev_dq = None
+            
+            for iteration in range(max_iterations):
+                # Compute forward kinematics
+                pin.forwardKinematics(pin_model, pin_data, q_result)
+                pin.updateFramePlacements(pin_model, pin_data)
+                
+                # Get current end-effector pose
+                current_pose = pin_data.oMf[end_effector_frame_id]
+                
+                # Compute error
+                pose_error = pin.log6(current_pose.inverse() * target_se3)
+                error = np.linalg.norm(pose_error.vector)
+                
+                # Debug: Print detailed information
+                current_position = current_pose.translation
+                target_position_local = target_T_local[:3, 3]
+                position_error = np.linalg.norm(current_position - target_position_local)
+                
+                self.__console.debug(f"IK Debug [{iteration}]: error={error:.6f}, pos_error={position_error:.6f}")
+                self.__console.debug(f"Current pos: [{current_position[0]:.3f}, {current_position[1]:.3f}, {current_position[2]:.3f}]")
+                self.__console.debug(f"Target pos:  [{target_position_local[0]:.3f}, {target_position_local[1]:.3f}, {target_position_local[2]:.3f}]")
+                self.__console.debug(f"Pose error vector: {pose_error.vector[:3]}")
+                
+                # Extract current joint angles for callback
+                current_joint_angles = {}
+                for i, joint_name in enumerate(joint_names):
+                    if i + 1 < len(q_result):
+                        current_joint_angles[joint_name] = q_result[i + 1]
+                
+                # Call iteration callback if provided
+                if iteration_callback:
+                    should_continue = iteration_callback(iteration, current_joint_angles, error)
+                    if should_continue is False:
+                        self.__console.info("IK computation stopped by callback")
+                        break
+                
+                if error < tolerance:
+                    break
+                
+                # Compute Jacobian - Use the correct reference frame
+                # For end-effector frame Jacobian in local coordinates
+                J = pin.computeFrameJacobian(pin_model, pin_data, q_result, end_effector_frame_id, pin.LOCAL)
+                
+                # Debug: Check Jacobian
+                self.__console.debug(f"Jacobian shape: {J.shape}, rank: {np.linalg.matrix_rank(J)}")
+                self.__console.debug(f"Jacobian condition number: {np.linalg.cond(J @ J.T):.2e}")
+                
+                # Check if Jacobian is degenerate
+                if np.linalg.matrix_rank(J) < min(J.shape):
+                    self.__console.warning(f"Jacobian is rank deficient: rank={np.linalg.matrix_rank(J)}, expected={min(J.shape)}")
+                
+                # Adaptive damping based on error magnitude
+                base_damping = 0.1
+                adaptive_damping = base_damping + 0.5 * min(error, 1.0)  # Increase damping for large errors
+                
+                JJT = J @ J.T
+                JJT_damped = JJT + adaptive_damping**2 * np.eye(JJT.shape[0])
+                
+                # Use pseudo-inverse for better numerical stability
+                try:
+                    J_pinv = J.T @ np.linalg.inv(JJT_damped)
+                    dq = J_pinv @ pose_error.vector
+                except np.linalg.LinAlgError:
+                    self.__console.error("Singular matrix in Jacobian inversion")
+                    break
+                
+                # Step size control to prevent oscillations
+                max_step_size = 0.5  # Maximum joint angle change per iteration (radians)
+                dq_norm = np.linalg.norm(dq)
+                self.__console.debug(f"Joint velocity norm: {dq_norm:.6f}, adaptive damping: {adaptive_damping:.3f}")
+                
+                if dq_norm > max_step_size:
+                    # Scale down the step to prevent large jumps
+                    dq = dq * (max_step_size / dq_norm)
+                    self.__console.debug(f"Step size limited: scaled to {np.linalg.norm(dq):.6f}")
+                
+                if dq_norm < 1e-8:
+                    self.__console.warning("Joint velocity too small - possible convergence or singularity")
+                    # Try with reduced damping
+                    if adaptive_damping > 0.01:
+                        adaptive_damping *= 0.5
+                        self.__console.info(f"Reducing damping to {adaptive_damping:.3f}")
+                        continue
+                    else:
+                        break
+                
+                # Momentum-based update to reduce oscillations
+                if iteration > 0:
+                    momentum = 0.1  # Momentum factor
+                    if 'prev_dq' in locals():
+                        dq = (1 - momentum) * dq + momentum * prev_dq
+                
+                prev_dq = dq.copy()  # Store for next iteration
+                
+                # Check if we're making progress
+                if iteration > 0 and abs(error - prev_error) < tolerance * 0.01:
+                    stagnation_count = getattr(locals(), 'stagnation_count', 0) + 1
+                    if stagnation_count > 5:
+                        self.__console.warning("IK stagnating - stopping early")
+                        break
+                else:
+                    stagnation_count = 0
+                
+                prev_error = error
+                
+                # Update configuration
+                q_result = pin.integrate(pin_model, q_result, dq)
+            
+            # Extract joint angles from result
+            joint_angles = {}
+            for i, joint_name in enumerate(joint_names):
+                if i + 1 < len(q_result):
+                    joint_angles[joint_name] = q_result[i + 1]
+            
+            success = error < tolerance
+            
+            self.__console.debug(f"IK with callback for {robot_name}: iterations={iteration+1}, error={error:.6f}, success={success}")
+            
+            return {
+                'joint_angles': joint_angles,
+                'success': success,
+                'error': error,
+                'iterations': iteration + 1
+            }
+            
+        except Exception as e:
+            self.__console.error(f"Failed to compute inverse kinematics with callback for {robot_name}: {e}")
+            return None

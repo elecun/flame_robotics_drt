@@ -52,6 +52,12 @@ class AppWindow(QMainWindow):
         
         # Initialize kinematics solver
         self.__kinematics = Kinematics(config)
+        
+        # Dictionary to map joint names to their UI controls
+        self.__joint_ui_mapping = {}
+        
+        # Flag to stop IK computation
+        self.__ik_stop_flag = False
 
         try:            
             if "gui" in config:
@@ -102,7 +108,6 @@ class AppWindow(QMainWindow):
 
                     # Setup TCP view table
                     self.table_tcp_move.setModel(self.__tcpview_model)
-                    self.__tcpview_model.tcpTransformChanged.connect(self.on_tcp_transform_changed)
                     
                     # Enable delete key functionality for geometry table
                     self.table_geometry.keyPressEvent = self.on_geometry_table_key_press
@@ -113,6 +118,9 @@ class AppWindow(QMainWindow):
                     self.btn_run_simulation.clicked.connect(self.on_run_simulation)
                     self.btn_stop_simulation.clicked.connect(self.on_stop_simulation)
                     self.btn_geometry_remove_all.clicked.connect(self.on_btn_geometry_remove_all)
+                    self.btn_tcp_move.clicked.connect(self.on_tcp_move)
+                    self.btn_tcp_movestop.clicked.connect(self.on_tcp_movestop)
+                    self.btn_set_initial_pose.clicked.connect(self.on_set_initial_pose)
 
                     # Initialize TCP table with initial robot poses (all joints at 0)
                     self._initialize_tcp_table()
@@ -122,28 +130,6 @@ class AppWindow(QMainWindow):
                 
         except Exception as e:
             self.__console.error(f"{e}")
-    
-    def closeEvent(self, event):
-        """Handle window close event"""
-        try:
-            # Clear all geometry in viewer3d before closing
-            self.__console.info("Clearing all geometry before closing controller window")
-            self.__call(socket=self.__socket, function="API_clear_all_geometry", kwargs={})
-            
-            # Clear geometry table model
-            self.__geometry_model.clear_all_geometry()
-            
-            # Close socket connection
-            if hasattr(self, '_AppWindow__socket') and self.__socket:
-                self.__socket.destroy_socket()
-                self.__console.debug("Controller socket destroyed")
-                
-        except Exception as e:
-            self.__console.error(f"Error during window close: {e}")
-        finally:
-            # Accept the close event
-            event.accept()
-            self.__console.info("Controller window closed")
 
     def __on_data_received(self, multipart_data):
         """Callback function for zpipe data reception"""
@@ -158,6 +144,10 @@ class AppWindow(QMainWindow):
     def closeEvent(self, event:QCloseEvent) -> None:
         """ Handle close event """
         try:
+            # Stop any ongoing IK computation first
+            self.__ik_stop_flag = True
+            self.__console.info("Stopping any ongoing IK computations")
+            
             # Clear all geometry in viewer3d before closing
             self.__console.info("Clearing all geometry before closing controller window")
             self.__call(socket=self.__socket, function="API_clear_all_geometry", kwargs={})
@@ -218,6 +208,95 @@ class AppWindow(QMainWindow):
         # Send to visualizer
         self.__call(socket=self.__socket, function="API_clear_all_geometry", kwargs={})
 
+    def on_tcp_move(self):
+        """Read TCP table values and perform inverse kinematics"""
+        try:
+            # Reset stop flag when starting new IK computation
+            self.__ik_stop_flag = False
+            
+            # Get all TCP data from the table model
+            tcp_data = self.__tcpview_model.get_all_tcp_data()
+            
+            if not tcp_data:
+                self.__console.warning("No TCP data available in table")
+                return
+            
+            # # Process each robot's TCP target
+            for robot_name, data in tcp_data.items():
+                if self.__ik_stop_flag:
+                    self.__console.info("IK computation stopped by user request")
+                    break
+                    
+                target_position = data['pos']  # [x, y, z]
+                target_orientation = data['ori']  # [rx, ry, rz] in radians
+                
+                self.__console.info(f"Performing IK for {robot_name}: pos={target_position}, ori={target_orientation}")
+                
+                # Perform inverse kinematics with iteration-based UI updates
+                self._perform_ik_with_ui_updates(robot_name, target_position, target_orientation)
+                
+        except Exception as e:
+            self.__console.error(f"Failed to perform TCP move: {e}")
+
+    def on_tcp_movestop(self):
+        """Stop ongoing IK computation"""
+        self.__ik_stop_flag = True
+        self.__console.info("TCP move operation stop requested")
+
+    def on_set_initial_pose(self):
+        """Set all robot joints to initial pose (0 position)"""
+        try:
+            # Reset stop flag when starting new operation
+            self.__ik_stop_flag = False
+            
+            self.__console.info("Setting all robot joints to initial pose (0 position)")
+            
+            # Get all available robots
+            robot_names = self.__kinematics.get_robot_names()
+            
+            for robot_name in robot_names:
+                # Get all joint names for this robot
+                joint_names = self.__kinematics.get_joint_names(robot_name)
+                
+                # Create zero joint angles dictionary
+                zero_joint_angles = {}
+                for joint_name in joint_names:
+                    zero_joint_angles[joint_name] = 0.0
+                
+                self.__console.debug(f"Setting {robot_name} joints to zero: {list(zero_joint_angles.keys())}")
+                
+                # Set joint angles to zero in manipulation module
+                if self.__kinematics.set_joint_angles(robot_name, zero_joint_angles):
+                    # Compute forward kinematics to get new end-effector pose
+                    fk_result = self.__kinematics.compute_fk(robot_name)
+                    
+                    if fk_result:
+                        # Update TCP view table with new position
+                        self.__tcpview_model.add_robot_tcp(
+                            robot_name, 
+                            fk_result['position'], 
+                            fk_result['orientation']
+                        )
+                        
+                        self.__console.info(f"Reset {robot_name}: TCP at {fk_result['position']}")
+                        
+                        # Send joint angles to viewer3d for visualization
+                        for joint_name in joint_names:
+                            self.__call(socket=self.__socket, function="API_set_joint_angle", 
+                                       kwargs={"joint": joint_name, "value": 0.0})
+                    else:
+                        self.__console.error(f"Failed to compute FK for {robot_name} after reset")
+                else:
+                    self.__console.error(f"Failed to set joint angles for {robot_name}")
+            
+            # Update all UI controls to reflect zero positions
+            self._update_all_joint_ui_controls()
+            
+            self.__console.info("Successfully set all robot joints to initial pose")
+                
+        except Exception as e:
+            self.__console.error(f"Failed to set initial pose: {e}")
+
     def on_slide_control_update(self, value, joint:str):
         slider = self.sender()
         self.findChild(QLineEdit, f"edit_{slider.objectName()}").setText(str(value/JOINT_ANGLE_SCALE_FACTOR))
@@ -256,23 +335,6 @@ class AppWindow(QMainWindow):
         self.__console.info(f"Geometry {name} transform changed: pos={position}, ori={orientation}")
         self.__call(socket=self.__socket, function="API_update_geometry_transform", kwargs={"name": name, "pos": position, "ori": orientation})
 
-    def on_tcp_transform_changed(self, robot_name: str, position: list, orientation: list):
-        """Handle TCP transform changes from table - perform inverse kinematics"""
-        self.__console.info(f"TCP {robot_name} transform changed: pos={position}, ori={orientation}")
-        
-        # Perform inverse kinematics when user edits TCP table
-        ik_result = self.compute_ik(robot_name, position, orientation)
-        
-        if ik_result and ik_result['success']:
-            # Send updated joint angles to viewer3d for visualization
-            for joint_name, angle in ik_result['joint_angles'].items():
-                self.__call(socket=self.__socket, function="API_set_joint_angle", 
-                          kwargs={"joint": joint_name, "value": angle})
-            
-            self.__console.info(f"Applied IK result to {robot_name} - moved to target pose")
-        else:
-            self.__console.warning(f"IK failed for {robot_name} - could not reach target pose")
-
     def on_geometry_table_key_press(self, event):
         """Handle key press events for geometry table"""
         from PyQt6.QtCore import Qt
@@ -304,17 +366,22 @@ class AppWindow(QMainWindow):
 
             for label, key in zip(rt_labels, rt_side_joint_limits.keys()):
                 label.setText(key)
-            for label, slider, key in zip(rt_labels, rt_sliders, rt_side_joint_limits.keys()):
+            for label, slider, edit, key in zip(rt_labels, rt_sliders, rt_edits, rt_side_joint_limits.keys()):
                 # slider.valueChanged.connect(lambda v: self.on_slide_control_update(v, key))
                 slider.valueChanged.connect(partial(self.on_slide_control_update, joint=key))
                 
+                # Map joint name to UI controls
+                self.__joint_ui_mapping[key] = {
+                    'slider': slider,
+                    'edit': edit
+                }
 
                 limits = rt_side_joint_limits[label.text()]
                 lower_deg = int(limits['lower'] * 180 / 3.14)*JOINT_ANGLE_SCALE_FACTOR
                 upper_deg = int(limits['upper'] * 180 / 3.14)*JOINT_ANGLE_SCALE_FACTOR
                 slider.setRange(lower_deg, upper_deg)
                 slider.setValue(0)
-                self.findChild(QLineEdit, f"edit_{slider.objectName()}").setText(str(0))
+                edit.setText(str(0))
         except Exception as e:
             self.__console.warning(f"{e}")
 
@@ -329,16 +396,22 @@ class AppWindow(QMainWindow):
 
             for label, key in zip(dda_labels, dda_side_joint_limits.keys()):
                 label.setText(key)
-            for label, slider, key in zip(dda_labels, dda_sliders, dda_side_joint_limits.keys()):
+            for label, slider, edit, key in zip(dda_labels, dda_sliders, dda_edits, dda_side_joint_limits.keys()):
                 # slider.valueChanged.connect(lambda v: self.on_slide_control_update(v, key))
                 slider.valueChanged.connect(partial(self.on_slide_control_update, joint=key))
+                
+                # Map joint name to UI controls
+                self.__joint_ui_mapping[key] = {
+                    'slider': slider,
+                    'edit': edit
+                }
 
                 limits = dda_side_joint_limits[label.text()]
                 lower_deg = int(limits['lower'] * 180 / 3.14)*JOINT_ANGLE_SCALE_FACTOR
                 upper_deg = int(limits['upper'] * 180 / 3.14)*JOINT_ANGLE_SCALE_FACTOR
                 slider.setRange(lower_deg, upper_deg)
                 slider.setValue(0)
-                self.findChild(QLineEdit, f"edit_{slider.objectName()}").setText(str(0))
+                edit.setText(str(0))
         except Exception as e:
             self.__console.warning(f"{e}")
 
@@ -488,7 +561,7 @@ class AppWindow(QMainWindow):
         """Compute inverse kinematics and update robot joints"""
         try:
             ik_result = self.__kinematics.compute_ik(
-                robot_name, target_position, target_orientation
+                robot_name, target_position, target_orientation, max_iterations=1000, tolerance=1
             )
             
             if ik_result and ik_result['success']:
@@ -543,5 +616,110 @@ class AppWindow(QMainWindow):
             
         except Exception as e:
             self.__console.error(f"Failed to initialize TCP table: {e}")
+    
+    def _update_joint_ui_controls(self, joint_angles: dict):
+        """Update slider and line edit controls with new joint angles"""
+        try:
+            self.__console.info(f"_update_joint_ui_controls called with {len(joint_angles)} joints")
+            self.__console.info(f"Available UI mappings: {list(self.__joint_ui_mapping.keys())}")
+            
+            for joint_name, angle_rad in joint_angles.items():
+                self.__console.info(f"Processing joint {joint_name}: {angle_rad:.4f} rad")
+                
+                if joint_name in self.__joint_ui_mapping:
+                    controls = self.__joint_ui_mapping[joint_name]
+                    slider = controls['slider']
+                    edit = controls['edit']
+                    
+                    # Convert radians to degrees and scale for slider
+                    angle_deg = angle_rad * 180.0 / math.pi
+                    slider_value = int(angle_deg * JOINT_ANGLE_SCALE_FACTOR)
+                    
+                    self.__console.info(f"Converting {joint_name}: {angle_rad:.4f} rad -> {angle_deg:.2f}° -> slider:{slider_value}")
+                    
+                    # Get current values for comparison
+                    current_slider_value = slider.value()
+                    current_edit_text = edit.text()
+                    
+                    # Temporarily disconnect signals to avoid recursive updates
+                    slider.blockSignals(True)
+                    edit.blockSignals(True)
+                    
+                    # Update slider and line edit
+                    slider.setValue(slider_value)
+                    edit.setText(f"{angle_deg:.2f}")
+                    
+                    # Re-enable signals
+                    slider.blockSignals(False)
+                    edit.blockSignals(False)
+                    
+                    self.__console.info(f"Updated {joint_name}: slider {current_slider_value}->{slider.value()}, edit '{current_edit_text}'->'{edit.text()}'")
+                else:
+                    self.__console.warning(f"No UI mapping found for joint {joint_name}")
+                    
+        except Exception as e:
+            self.__console.error(f"Failed to update joint UI controls: {e}")
+    
+    def _update_all_joint_ui_controls(self):
+        """Update all joint UI controls to reflect current joint angles in manipulation module"""
+        try:
+            robot_names = self.__kinematics.get_robot_names()
+            
+            for robot_name in robot_names:
+                # Get current joint angles from manipulation module
+                current_joint_angles = self.__kinematics.get_joint_angles(robot_name)
+                
+                if current_joint_angles:
+                    self.__console.debug(f"Updating UI controls for {robot_name} with {len(current_joint_angles)} joints")
+                    self._update_joint_ui_controls(current_joint_angles)
+                else:
+                    self.__console.warning(f"No joint angles found for {robot_name}")
+                    
+        except Exception as e:
+            self.__console.error(f"Failed to update all joint UI controls: {e}")
+    
+    def _perform_ik_with_ui_updates(self, robot_name: str, target_position: list, target_orientation: list):
+        """Perform IK with UI updates at each iteration"""
+        try:
+            # Create callback function for iteration updates
+            def iteration_callback(iteration: int, joint_angles: dict, error: float):
+                """Called at each IK iteration to update UI"""
+                # Check if stop flag is set
+                if self.__ik_stop_flag:
+                    self.__console.info("IK iteration stopped by user request")
+                    return False  # Signal to stop iteration
+                
+                self.__console.info(f"IK Iteration {iteration}: error={error:.6f}")
+                
+                # Update UI controls with current joint angles
+                self._update_joint_ui_controls(joint_angles)
+                
+                # Send updated joint angles to viewer3d for visualization
+                for joint_name, angle in joint_angles.items():
+                    self.__call(socket=self.__socket, function="API_set_joint_angle", kwargs={"joint": joint_name, "value": angle})
+                
+                # Allow GUI to update
+                QApplication.processEvents()
+                
+                # Small delay to visualize the iteration process
+                import time
+                time.sleep(0.1)
+                
+                return True  # Continue iteration
+            
+            # Perform inverse kinematics with iteration callback
+            ik_result = self.__kinematics.compute_ik_with_callback( robot_name, target_position, target_orientation, 
+                iteration_callback=iteration_callback, max_iterations=100, tolerance=1e-3)
+            
+            if ik_result and ik_result['success']:
+                self.__console.info(f"IK converged for {robot_name} in {ik_result['iterations']} iterations, error={ik_result['error']:.6f}")
+            else:
+                if self.__ik_stop_flag:
+                    self.__console.info(f"IK stopped for {robot_name} by user request")
+                else:
+                    self.__console.warning(f"IK failed to converge for {robot_name}")
+                
+        except Exception as e:
+            self.__console.error(f"Failed to perform IK with UI updates: {e}")
 
 
