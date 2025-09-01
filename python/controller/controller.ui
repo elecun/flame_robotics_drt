@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>805</width>
-    <height>773</height>
+    <height>790</height>
    </rect>
   </property>
   <property name="font">
@@ -21,7 +21,7 @@
   </property>
   <property name="windowIcon">
    <iconset theme="document-save-as">
-    <normaloff>.</normaloff>.</iconset>
+    <normaloff>../../../../.designer/backup</normaloff>../../../../.designer/backup</iconset>
   </property>
   <property name="toolTip">
    <string/>
@@ -1141,6 +1141,13 @@ background-color: rgb(255, 100, 100);</string>
          <height>81</height>
         </rect>
        </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(200,200,200);</string>
+       </property>
+       <attribute name="horizontalHeaderStretchLastSection">
+        <bool>true</bool>
+       </attribute>
       </widget>
      </widget>
     </widget>
@@ -1199,7 +1206,7 @@ background-color: rgb(200,200,200);</string>
       </property>
       <property name="icon">
        <iconset>
-        <normaloff>../resource/delete.png</normaloff>../resource/delete.png</iconset>
+        <normaloff>../../../../.designer/resource/delete.png</normaloff>../../../../.designer/resource/delete.png</iconset>
       </property>
      </widget>
      <widget class="QTableView" name="table_geometry">
@@ -1224,7 +1231,7 @@ background-color: rgb(200,200,200);</string>
      <x>0</x>
      <y>0</y>
      <width>805</width>
-     <height>24</height>
+     <height>43</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuControl">
