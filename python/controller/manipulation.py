@@ -607,6 +607,16 @@ class Kinematics:
             if target_orientation is not None:
                 self.__console.info(f"Target orientation: [{target_orientation[0]:.3f}, {target_orientation[1]:.3f}, {target_orientation[2]:.3f}] rad")
             
+            # Basic workspace check - rough estimation
+            target_distance = np.linalg.norm(target_T_local[:3, 3])
+            estimated_reach = 2.0  # Rough estimate for typical 6DOF arm reach (meters)
+            
+            if target_distance > estimated_reach:
+                self.__console.warning(f"Target may be outside workspace: distance={target_distance:.3f}m > estimated_reach={estimated_reach:.3f}m")
+                self.__console.info("Consider using a closer target position")
+            else:
+                self.__console.info(f"Target within estimated workspace: distance={target_distance:.3f}m")
+            
             # Check current end-effector position before starting
             initial_fk = self.compute_fk(robot_name)
             if initial_fk:
@@ -640,9 +650,22 @@ class Kinematics:
             # Create target SE3 object
             target_se3 = pin.SE3(target_T_local[:3, :3], target_T_local[:3, 3])
             
+            # Early termination if target is too far
+            if target_distance > estimated_reach * 1.2:  # Allow some margin
+                self.__console.error(f"Target definitely outside workspace, aborting IK")
+                return {
+                    'joint_angles': {},
+                    'success': False,
+                    'error': target_distance,
+                    'iterations': 0
+                }
+            
             # Solve IK using CLIK (Closed-Loop Inverse Kinematics)
             q_result = q_init.copy()
             error = float('inf')
+            prev_error = float('inf')
+            stagnation_count = 0
+            prev_dq = None
             
             for iteration in range(max_iterations):
                 # Compute forward kinematics
@@ -694,10 +717,12 @@ class Kinematics:
                 if np.linalg.matrix_rank(J) < min(J.shape):
                     self.__console.warning(f"Jacobian is rank deficient: rank={np.linalg.matrix_rank(J)}, expected={min(J.shape)}")
                 
-                # Damped least squares solution with better numerical stability
-                lambda_damping = 0.1  # Increased damping for better stability
+                # Adaptive damping based on error magnitude
+                base_damping = 0.1
+                adaptive_damping = base_damping + 0.5 * min(error, 1.0)  # Increase damping for large errors
+                
                 JJT = J @ J.T
-                JJT_damped = JJT + lambda_damping**2 * np.eye(JJT.shape[0])
+                JJT_damped = JJT + adaptive_damping**2 * np.eye(JJT.shape[0])
                 
                 # Use pseudo-inverse for better numerical stability
                 try:
@@ -707,11 +732,44 @@ class Kinematics:
                     self.__console.error("Singular matrix in Jacobian inversion")
                     break
                 
-                # Debug: Check joint velocity
+                # Step size control to prevent oscillations
+                max_step_size = 0.5  # Maximum joint angle change per iteration (radians)
                 dq_norm = np.linalg.norm(dq)
-                self.__console.debug(f"Joint velocity norm: {dq_norm:.6f}")
+                self.__console.debug(f"Joint velocity norm: {dq_norm:.6f}, adaptive damping: {adaptive_damping:.3f}")
+                
+                if dq_norm > max_step_size:
+                    # Scale down the step to prevent large jumps
+                    dq = dq * (max_step_size / dq_norm)
+                    self.__console.debug(f"Step size limited: scaled to {np.linalg.norm(dq):.6f}")
+                
                 if dq_norm < 1e-8:
-                    self.__console.warning("Joint velocity too small - possible singularity or convergence issue")
+                    self.__console.warning("Joint velocity too small - possible convergence or singularity")
+                    # Try with reduced damping
+                    if adaptive_damping > 0.01:
+                        adaptive_damping *= 0.5
+                        self.__console.info(f"Reducing damping to {adaptive_damping:.3f}")
+                        continue
+                    else:
+                        break
+                
+                # Momentum-based update to reduce oscillations
+                if iteration > 0:
+                    momentum = 0.1  # Momentum factor
+                    if 'prev_dq' in locals():
+                        dq = (1 - momentum) * dq + momentum * prev_dq
+                
+                prev_dq = dq.copy()  # Store for next iteration
+                
+                # Check if we're making progress
+                if iteration > 0 and abs(error - prev_error) < tolerance * 0.01:
+                    stagnation_count = getattr(locals(), 'stagnation_count', 0) + 1
+                    if stagnation_count > 5:
+                        self.__console.warning("IK stagnating - stopping early")
+                        break
+                else:
+                    stagnation_count = 0
+                
+                prev_error = error
                 
                 # Update configuration
                 q_result = pin.integrate(pin_model, q_result, dq)
