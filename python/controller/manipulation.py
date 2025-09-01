@@ -600,6 +600,21 @@ class Kinematics:
             # Apply inverse base transform
             target_T_local = np.linalg.inv(base_T) @ target_T
             
+            # Debug: Print initial and target information for callback version
+            self.__console.info(f"IK Setup for {robot_name} (with callback):")
+            self.__console.info(f"Target position (global): [{target_position[0]:.3f}, {target_position[1]:.3f}, {target_position[2]:.3f}]")
+            self.__console.info(f"Target position (local):  [{target_T_local[0,3]:.3f}, {target_T_local[1,3]:.3f}, {target_T_local[2,3]:.3f}]")
+            if target_orientation is not None:
+                self.__console.info(f"Target orientation: [{target_orientation[0]:.3f}, {target_orientation[1]:.3f}, {target_orientation[2]:.3f}] rad")
+            
+            # Check current end-effector position before starting
+            initial_fk = self.compute_fk(robot_name)
+            if initial_fk:
+                current_pos = initial_fk['position']
+                initial_error = np.linalg.norm(np.array(current_pos) - np.array(target_position))
+                self.__console.info(f"Initial end-effector position: [{current_pos[0]:.3f}, {current_pos[1]:.3f}, {current_pos[2]:.3f}]")
+                self.__console.info(f"Initial position error: {initial_error:.6f} m")
+            
             # Initial joint configuration
             if initial_joint_config is None:
                 initial_joint_config = self.__joint_configs[robot_name]
@@ -608,9 +623,16 @@ class Kinematics:
             q_init = np.zeros(pin_model.nq)
             joint_names = robot_info['joint_names']
             
+            # Debug: Print initial joint configuration
+            self.__console.info(f"Initial joint configuration for {robot_name}:")
             for i, joint_name in enumerate(joint_names):
                 if i + 1 < len(q_init):
-                    q_init[i + 1] = initial_joint_config.get(joint_name, 0.0)
+                    joint_value = initial_joint_config.get(joint_name, 0.0)
+                    q_init[i + 1] = joint_value
+                    self.__console.info(f"  {joint_name}: {joint_value:.4f} rad ({np.rad2deg(joint_value):.1f}°)")
+                    
+            # Print q_init vector
+            self.__console.info(f"q_init vector (size {len(q_init)}): {q_init[:min(10, len(q_init))]}")  # First 10 elements only
             
             # Get end-effector frame ID
             end_effector_frame_id = pin_model.nframes - 1
@@ -634,6 +656,16 @@ class Kinematics:
                 pose_error = pin.log6(current_pose.inverse() * target_se3)
                 error = np.linalg.norm(pose_error.vector)
                 
+                # Debug: Print detailed information
+                current_position = current_pose.translation
+                target_position_local = target_T_local[:3, 3]
+                position_error = np.linalg.norm(current_position - target_position_local)
+                
+                self.__console.debug(f"IK Debug [{iteration}]: error={error:.6f}, pos_error={position_error:.6f}")
+                self.__console.debug(f"Current pos: [{current_position[0]:.3f}, {current_position[1]:.3f}, {current_position[2]:.3f}]")
+                self.__console.debug(f"Target pos:  [{target_position_local[0]:.3f}, {target_position_local[1]:.3f}, {target_position_local[2]:.3f}]")
+                self.__console.debug(f"Pose error vector: {pose_error.vector[:3]}")
+                
                 # Extract current joint angles for callback
                 current_joint_angles = {}
                 for i, joint_name in enumerate(joint_names):
@@ -650,14 +682,36 @@ class Kinematics:
                 if error < tolerance:
                     break
                 
-                # Compute Jacobian
-                pin.computeFrameJacobian(pin_model, pin_data, q_result, end_effector_frame_id)
-                J = pin_data.J
+                # Compute Jacobian - Use the correct reference frame
+                # For end-effector frame Jacobian in local coordinates
+                J = pin.computeFrameJacobian(pin_model, pin_data, q_result, end_effector_frame_id, pin.LOCAL)
                 
-                # Damped least squares solution
-                lambda_damping = 0.01  # Damping parameter
-                J_damped = J.T @ np.linalg.inv(J @ J.T + lambda_damping**2 * np.eye(J.shape[0]))
-                dq = J_damped @ pose_error.vector
+                # Debug: Check Jacobian
+                self.__console.debug(f"Jacobian shape: {J.shape}, rank: {np.linalg.matrix_rank(J)}")
+                self.__console.debug(f"Jacobian condition number: {np.linalg.cond(J @ J.T):.2e}")
+                
+                # Check if Jacobian is degenerate
+                if np.linalg.matrix_rank(J) < min(J.shape):
+                    self.__console.warning(f"Jacobian is rank deficient: rank={np.linalg.matrix_rank(J)}, expected={min(J.shape)}")
+                
+                # Damped least squares solution with better numerical stability
+                lambda_damping = 0.1  # Increased damping for better stability
+                JJT = J @ J.T
+                JJT_damped = JJT + lambda_damping**2 * np.eye(JJT.shape[0])
+                
+                # Use pseudo-inverse for better numerical stability
+                try:
+                    J_pinv = J.T @ np.linalg.inv(JJT_damped)
+                    dq = J_pinv @ pose_error.vector
+                except np.linalg.LinAlgError:
+                    self.__console.error("Singular matrix in Jacobian inversion")
+                    break
+                
+                # Debug: Check joint velocity
+                dq_norm = np.linalg.norm(dq)
+                self.__console.debug(f"Joint velocity norm: {dq_norm:.6f}")
+                if dq_norm < 1e-8:
+                    self.__console.warning("Joint velocity too small - possible singularity or convergence issue")
                 
                 # Update configuration
                 q_result = pin.integrate(pin_model, q_result, dq)

@@ -120,6 +120,7 @@ class AppWindow(QMainWindow):
                     self.btn_geometry_remove_all.clicked.connect(self.on_btn_geometry_remove_all)
                     self.btn_tcp_move.clicked.connect(self.on_tcp_move)
                     self.btn_tcp_movestop.clicked.connect(self.on_tcp_movestop)
+                    self.btn_set_initial_pose.clicked.connect(self.on_set_initial_pose)
 
                     # Initialize TCP table with initial robot poses (all joints at 0)
                     self._initialize_tcp_table()
@@ -241,6 +242,60 @@ class AppWindow(QMainWindow):
         """Stop ongoing IK computation"""
         self.__ik_stop_flag = True
         self.__console.info("TCP move operation stop requested")
+
+    def on_set_initial_pose(self):
+        """Set all robot joints to initial pose (0 position)"""
+        try:
+            # Reset stop flag when starting new operation
+            self.__ik_stop_flag = False
+            
+            self.__console.info("Setting all robot joints to initial pose (0 position)")
+            
+            # Get all available robots
+            robot_names = self.__kinematics.get_robot_names()
+            
+            for robot_name in robot_names:
+                # Get all joint names for this robot
+                joint_names = self.__kinematics.get_joint_names(robot_name)
+                
+                # Create zero joint angles dictionary
+                zero_joint_angles = {}
+                for joint_name in joint_names:
+                    zero_joint_angles[joint_name] = 0.0
+                
+                self.__console.debug(f"Setting {robot_name} joints to zero: {list(zero_joint_angles.keys())}")
+                
+                # Set joint angles to zero in manipulation module
+                if self.__kinematics.set_joint_angles(robot_name, zero_joint_angles):
+                    # Compute forward kinematics to get new end-effector pose
+                    fk_result = self.__kinematics.compute_fk(robot_name)
+                    
+                    if fk_result:
+                        # Update TCP view table with new position
+                        self.__tcpview_model.add_robot_tcp(
+                            robot_name, 
+                            fk_result['position'], 
+                            fk_result['orientation']
+                        )
+                        
+                        self.__console.info(f"Reset {robot_name}: TCP at {fk_result['position']}")
+                        
+                        # Send joint angles to viewer3d for visualization
+                        for joint_name in joint_names:
+                            self.__call(socket=self.__socket, function="API_set_joint_angle", 
+                                       kwargs={"joint": joint_name, "value": 0.0})
+                    else:
+                        self.__console.error(f"Failed to compute FK for {robot_name} after reset")
+                else:
+                    self.__console.error(f"Failed to set joint angles for {robot_name}")
+            
+            # Update all UI controls to reflect zero positions
+            self._update_all_joint_ui_controls()
+            
+            self.__console.info("Successfully set all robot joints to initial pose")
+                
+        except Exception as e:
+            self.__console.error(f"Failed to set initial pose: {e}")
 
     def on_slide_control_update(self, value, joint:str):
         slider = self.sender()
@@ -604,6 +659,24 @@ class AppWindow(QMainWindow):
                     
         except Exception as e:
             self.__console.error(f"Failed to update joint UI controls: {e}")
+    
+    def _update_all_joint_ui_controls(self):
+        """Update all joint UI controls to reflect current joint angles in manipulation module"""
+        try:
+            robot_names = self.__kinematics.get_robot_names()
+            
+            for robot_name in robot_names:
+                # Get current joint angles from manipulation module
+                current_joint_angles = self.__kinematics.get_joint_angles(robot_name)
+                
+                if current_joint_angles:
+                    self.__console.debug(f"Updating UI controls for {robot_name} with {len(current_joint_angles)} joints")
+                    self._update_joint_ui_controls(current_joint_angles)
+                else:
+                    self.__console.warning(f"No joint angles found for {robot_name}")
+                    
+        except Exception as e:
+            self.__console.error(f"Failed to update all joint UI controls: {e}")
     
     def _perform_ik_with_ui_updates(self, robot_name: str, target_position: list, target_orientation: list):
         """Perform IK with UI updates at each iteration"""
