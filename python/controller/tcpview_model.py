@@ -16,37 +16,35 @@ class TCPViewTableModel(QAbstractTableModel):
     # Signal emitted when TCP transform is updated
     tcpTransformChanged = pyqtSignal(str, list, list)  # robot_name, position, orientation
     
-    def __init__(self):
+    def __init__(self, config:dict):
         super().__init__()
         self.__console = ConsoleLogger.get_logger()
+        self.__config = config
         
         # Column definitions for TCP data
         self.columns = [
-            "Robot Name", "X", "Y", "Z", "X-Axis Rot (°)", "Y-Axis Rot (°)", "Z-Axis Rot (°)"
+            "Robot Name", "X", "Y", "Z", "X-Axis Rot (rad)", "Y-Axis Rot (rad)", "Z-Axis Rot (rad)"
         ]
         
         # Data storage: dict with robot name as key
         # Value: {"pos": [x, y, z], "ori": [rx, ry, rz]} in global coordinate system
         self.tcp_data = {}
         
-        # Initialize with common robot names found in URDF files
-        self._initialize_default_robots()
+        # Initialize with robot names from config
+        self._initialize_robots_from_config()
         
-    def _initialize_default_robots(self):
-        """Initialize table with robot names from URDF files"""
-        default_robots = [
-            "ur5",
-            "rt_rb10_1300e", 
-            "rb10_1300e",
-            "rb20_1900es",
-            "dda_rb10_1300e"
-        ]
-        
-        for robot_name in default_robots:
-            self.tcp_data[robot_name] = {
-                'pos': [0.0, 0.0, 0.0],  # Default TCP position
-                'ori': [0.0, 0.0, 0.0]   # Default TCP orientation in radians
-            }
+    def _initialize_robots_from_config(self):
+        """Initialize table with robot names from config URDF section"""
+        if "urdf" in self.__config:
+            for urdf_config in self.__config["urdf"]:
+                robot_name = urdf_config.get("name", "unknown")
+                self.tcp_data[robot_name] = {
+                    'pos': [0.0, 0.0, 0.0],  # Default TCP position (will be updated by FK)
+                    'ori': [0.0, 0.0, 0.0]   # Default TCP orientation in radians (will be updated by FK)
+                }
+                self.__console.debug(f"Initialized TCP data for robot: {robot_name}")
+        else:
+            self.__console.warning("No URDF configuration found in config for TCP view initialization")
     
     def rowCount(self, parent=None):
         return len(self.tcp_data)
@@ -79,10 +77,10 @@ class TCPViewTableModel(QAbstractTableModel):
             elif col in [1, 2, 3]:  # X, Y, Z position
                 pos_idx = col - 1
                 return f"{tcp_info['pos'][pos_idx]:.3f}"
-            elif col in [4, 5, 6]:  # X, Y, Z axis rotation (convert radians to degrees for display)
+            elif col in [4, 5, 6]:  # X, Y, Z axis rotation (display in radians)
                 rot_idx = col - 4
-                degrees = np.degrees(tcp_info['ori'][rot_idx])
-                return f"{degrees:.1f}"
+                radians = tcp_info['ori'][rot_idx]
+                return f"{radians:.4f}"
         
         elif role == Qt.ItemDataRole.BackgroundRole:
             # Different colors for different robot types
@@ -123,10 +121,9 @@ class TCPViewTableModel(QAbstractTableModel):
         if col in [1, 2, 3]:  # Position (X, Y, Z)
             pos_idx = col - 1
             tcp_info['pos'][pos_idx] = float_value
-        elif col in [4, 5, 6]:  # Orientation (convert degrees to radians for storage)
+        elif col in [4, 5, 6]:  # Orientation (input is already in radians)
             rot_idx = col - 4
-            radians = np.radians(float_value)
-            tcp_info['ori'][rot_idx] = radians
+            tcp_info['ori'][rot_idx] = float_value
         
         # Emit signal for TCP update
         self.tcpTransformChanged.emit(
@@ -184,7 +181,7 @@ class TCPViewTableModel(QAbstractTableModel):
         """Clear all TCP data from the table"""
         self.beginResetModel()
         self.tcp_data.clear()
-        self._initialize_default_robots()  # Re-initialize with default robots
+        self._initialize_robots_from_config()  # Re-initialize with config robots
         self.endResetModel()
         
         self.__console.debug("Cleared all TCP data from table")

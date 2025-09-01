@@ -24,14 +24,18 @@ import math
 from functools import partial
 
 from common.zpipe import AsyncZSocket, ZPipe
-from common.urdf_parser import URDFParser
 from util.logger.console import ConsoleLogger
 from .geometry_model import GeometryTableModel  # geometry model handling
-# from .tcpview_model import TCPViewTableModel  # tcp view model handling
+from .tcpview_model import TCPViewTableModel  # tcp view model handling
+from .manipulation import Kinematics  # kinematics solver for FK/IK calculation
 
 """ Global variables """
 # DO not change this value unless necessary
 JOINT_ANGLE_SCALE_FACTOR = 1000
+
+# Do change these values according to your robot configuration
+DDA_SIDE_MANIPULATOR = "dda_rb10_1300e"
+RT_SIDE_MANIPULATOR = "rt_rb10_1300e"
 
 
 class AppWindow(QMainWindow):
@@ -44,7 +48,10 @@ class AppWindow(QMainWindow):
 
         # Initialize table models
         self.__geometry_model = GeometryTableModel()
-        # self.__tcpview_model = TCPViewTableModel()
+        self.__tcpview_model = TCPViewTableModel(config=self.__config)
+        
+        # Initialize kinematics solver
+        self.__kinematics = Kinematics(config)
 
         try:            
             if "gui" in config:
@@ -73,20 +80,15 @@ class AppWindow(QMainWindow):
                     _rt_joint_limits = {}
                     _dda_joint_limits = {}
                     
-                    # Load URDF and parse joint limits
-                    if "urdf" in self.__config and self.__config["urdf"]:
-                        for urdf_info in self.__config["urdf"]:
-                            urdf_file = os.path.join(self.__config["root_path"], urdf_info["path"])
-                            if os.path.exists(urdf_file):
-                                parser = URDFParser(urdf_file)
-                                if "dda" in urdf_info["name"]:
-                                    _dda_joint_limits = parser.get_all_joint_limits()
-                                    self.__console.info(f"Found {len(_dda_joint_limits)} joints with limits for DDA-side Manipulator")
-                                elif "rt" in urdf_info["name"]:
-                                    _rt_joint_limits = parser.get_all_joint_limits()
-                                    self.__console.info(f"Found {len(_rt_joint_limits)} joints with limits for RT-side Manipulator")
-                            else:
-                                self.__console.warning(f"URDF file not found: {urdf_file}")
+                    # Get joint limits from manipulation module
+                    for robot_name in self.__kinematics.get_robot_names():
+                        joint_limits = self.__kinematics.get_joint_limits(robot_name)
+                        if DDA_SIDE_MANIPULATOR in robot_name:
+                            _dda_joint_limits = joint_limits
+                            self.__console.info(f"Found {len(_dda_joint_limits)} joints with limits for DDA-side Manipulator")
+                        elif RT_SIDE_MANIPULATOR in robot_name:
+                            _rt_joint_limits = joint_limits
+                            self.__console.info(f"Found {len(_rt_joint_limits)} joints with limits for RT-side Manipulator")
 
                     # menu actions
                     self.actionUtilGeneratePCD.triggered.connect(self.on_select_generate_pcd)
@@ -99,8 +101,8 @@ class AppWindow(QMainWindow):
                     self.__geometry_model.geometryTransformChanged.connect(self.on_geometry_transform_changed)
 
                     # Setup TCP view table
-                    # self.table_tcpview.setModel(self.__tcpview_model)
-
+                    self.table_tcp_move.setModel(self.__tcpview_model)
+                    self.__tcpview_model.tcpTransformChanged.connect(self.on_tcp_transform_changed)
                     
                     # Enable delete key functionality for geometry table
                     self.table_geometry.keyPressEvent = self.on_geometry_table_key_press
@@ -111,6 +113,9 @@ class AppWindow(QMainWindow):
                     self.btn_run_simulation.clicked.connect(self.on_run_simulation)
                     self.btn_stop_simulation.clicked.connect(self.on_stop_simulation)
                     self.btn_geometry_remove_all.clicked.connect(self.on_btn_geometry_remove_all)
+
+                    # Initialize TCP table with initial robot poses (all joints at 0)
+                    self._initialize_tcp_table()
 
                 else:
                     raise Exception(f"Cannot found UI file : {ui_path}")
@@ -216,13 +221,57 @@ class AppWindow(QMainWindow):
     def on_slide_control_update(self, value, joint:str):
         slider = self.sender()
         self.findChild(QLineEdit, f"edit_{slider.objectName()}").setText(str(value/JOINT_ANGLE_SCALE_FACTOR))
-        self.__call(socket=self.__socket, function="API_set_joint_angle", kwargs={"joint": joint, "value": value/JOINT_ANGLE_SCALE_FACTOR*3.14/180})
-        self.__console.info(f"({self.__class__.__name__}) Joint {joint} value changed to {value/JOINT_ANGLE_SCALE_FACTOR*3.14/180}")
+        
+        # Convert to radians
+        angle_rad = value/JOINT_ANGLE_SCALE_FACTOR*3.14/180
+        
+        # Send to viewer3d for visualization
+        self.__call(socket=self.__socket, function="API_set_joint_angle", kwargs={"joint": joint, "value": angle_rad})
+        
+        # Update manipulation module and compute FK
+        # Determine robot name from joint name (joint format: "dda_joint_xxx" or "rt_joint_xxx")
+        robot_name = None
+        
+        # Extract prefix from joint name (e.g., "dda" from "dda_joint_base")
+        if "_joint_" in joint:
+            joint_prefix = joint.split("_joint_")[0]  # "dda" or "rt"
+            
+            # Find matching robot name in config
+            for robot in self.__kinematics.get_robot_names():
+                if joint_prefix in robot:  # "dda" matches "dda_rb10_1300e"
+                    robot_name = robot
+                    break
+        
+        self.__console.debug(f"Joint {joint} mapped to robot {robot_name}")
+        
+        if robot_name:
+            self.update_robot_joint_angle(robot_name, joint, angle_rad)
+        else:
+            self.__console.warning(f"Could not find robot for joint {joint}")
+        
+        self.__console.info(f"({self.__class__.__name__}) Joint {joint} value changed to {angle_rad:.4f} rad ({np.rad2deg(angle_rad):.1f}°)")
 
     def on_geometry_transform_changed(self, name: str, position: list, orientation: list):
         """Handle geometry transform changes from table"""
         self.__console.info(f"Geometry {name} transform changed: pos={position}, ori={orientation}")
         self.__call(socket=self.__socket, function="API_update_geometry_transform", kwargs={"name": name, "pos": position, "ori": orientation})
+
+    def on_tcp_transform_changed(self, robot_name: str, position: list, orientation: list):
+        """Handle TCP transform changes from table - perform inverse kinematics"""
+        self.__console.info(f"TCP {robot_name} transform changed: pos={position}, ori={orientation}")
+        
+        # Perform inverse kinematics when user edits TCP table
+        ik_result = self.compute_ik(robot_name, position, orientation)
+        
+        if ik_result and ik_result['success']:
+            # Send updated joint angles to viewer3d for visualization
+            for joint_name, angle in ik_result['joint_angles'].items():
+                self.__call(socket=self.__socket, function="API_set_joint_angle", 
+                          kwargs={"joint": joint_name, "value": angle})
+            
+            self.__console.info(f"Applied IK result to {robot_name} - moved to target pose")
+        else:
+            self.__console.warning(f"IK failed for {robot_name} - could not reach target pose")
 
     def on_geometry_table_key_press(self, event):
         """Handle key press events for geometry table"""
@@ -320,9 +369,179 @@ class AppWindow(QMainWindow):
         except json.JSONDecodeError as e:
             self.__console.error(f"[Main Window] JSON Decode Error: {e}")
 
+
+    # ========== Manipulation Module Methods ==========
     
+    def update_robot_joint_angle(self, robot_name: str, joint_name: str, angle_rad: float):
+        """Update joint angle and compute forward kinematics"""
+        try:
+            self.__console.debug(f"Updating joint {joint_name} on robot {robot_name} to {angle_rad:.4f} rad")
+            
+            # Update joint angle in manipulation module
+            if self.__kinematics.set_joint_angle(robot_name, joint_name, angle_rad):
+                self.__console.debug(f"Joint angle set successfully, computing FK...")
+                
+                # Compute forward kinematics to get end-effector pose
+                fk_result = self.__kinematics.compute_fk(robot_name)
+                
+                if fk_result:
+                    # self.__console.debug(f"FK result: pos={fk_result['position']}, ori={fk_result['orientation']}")
+                    
+                    # Update TCP view table with new end-effector position
+                    self.__tcpview_model.add_robot_tcp(
+                        robot_name, 
+                        fk_result['position'], 
+                        fk_result['orientation']
+                    )
+                    
+                    self.__console.info(f"Updated {robot_name}.{joint_name} = {np.rad2deg(angle_rad):.1f}°, "f"TCP: {fk_result['position']}")
+                    return True
+                else:
+                    self.__console.error(f"FK computation failed for {robot_name}")
+            else:
+                self.__console.error(f"Failed to set joint angle for {robot_name}.{joint_name}")
+                    
+        except Exception as e:
+            self.__console.error(f"Failed to update robot joint angle: {e}")
+        return False
+    
+    def update_robot_joint_angles(self, robot_name: str, joint_angles: dict):
+        """Update multiple joint angles and compute forward kinematics"""
+        try:
+            # Update joint angles in manipulation module
+            if self.__kinematics.set_joint_angles(robot_name, joint_angles):
+                # Compute forward kinematics to get end-effector pose
+                fk_result = self.__kinematics.compute_fk(robot_name)
+                
+                if fk_result:
+                    # Update TCP view table with new end-effector position
+                    self.__tcpview_model.add_robot_tcp(
+                        robot_name, 
+                        fk_result['position'], 
+                        fk_result['orientation']
+                    )
+                    
+                    self.__console.debug(f"Updated {robot_name} joints, TCP: {fk_result['position']}")
+                    return True
+                    
+        except Exception as e:
+            self.__console.error(f"Failed to update robot joint angles: {e}")
+        return False
+    
+    def get_robot_end_effector_pose(self, robot_name: str):
+        """Get current end-effector pose for a robot"""
+        try:
+            return self.__kinematics.get_end_effector_pose(robot_name)
+        except Exception as e:
+            self.__console.error(f"Failed to get end-effector pose for {robot_name}: {e}")
+            return None
+    
+    def get_all_robot_poses(self):
+        """Get end-effector poses for all robots"""
+        try:
+            return self.__kinematics.compute_all_robots_fk()
+        except Exception as e:
+            self.__console.error(f"Failed to get all robot poses: {e}")
+            return {}
+    
+    def reset_robot_joints(self, robot_name: str = None):
+        """Reset robot joints to zero position"""
+        try:
+            self.__kinematics.reset_joint_angles(robot_name)
+            
+            # Update TCP view table
+            if robot_name:
+                fk_result = self.__kinematics.compute_fk(robot_name)
+                if fk_result:
+                    self.__tcpview_model.add_robot_tcp(
+                        robot_name, 
+                        fk_result['position'], 
+                        fk_result['orientation']
+                    )
+            else:
+                # Reset all robots
+                for name in self.__kinematics.get_robot_names():
+                    fk_result = self.__kinematics.compute_fk(name)
+                    if fk_result:
+                        self.__tcpview_model.add_robot_tcp(
+                            name, 
+                            fk_result['position'], 
+                            fk_result['orientation']
+                        )
+            
+            self.__console.info(f"Reset robot joints: {robot_name if robot_name else 'all robots'}")
+            return True
+            
+        except Exception as e:
+            self.__console.error(f"Failed to reset robot joints: {e}")
+            return False
+    
+    def get_robot_info(self, robot_name: str):
+        """Get robot information including joint names and current configuration"""
+        try:
+            return self.__kinematics.get_robot_info(robot_name)
+        except Exception as e:
+            self.__console.error(f"Failed to get robot info for {robot_name}: {e}")
+            return None
 
+    def compute_ik(self, robot_name: str, target_position: list, target_orientation: list = None):
+        """Compute inverse kinematics and update robot joints"""
+        try:
+            ik_result = self.__kinematics.compute_ik(
+                robot_name, target_position, target_orientation
+            )
+            
+            if ik_result and ik_result['success']:
+                # Update manipulation module with IK result
+                if self.__kinematics.set_joint_angles(robot_name, ik_result['joint_angles']):
+                    # Compute forward kinematics to verify and update TCP table
+                    fk_result = self.__kinematics.compute_fk(robot_name)
+                    
+                    if fk_result:
+                        # Update TCP view table with new position
+                        self.__tcpview_model.add_robot_tcp(
+                            robot_name, 
+                            fk_result['position'], 
+                            fk_result['orientation']
+                        )
+                        
+                        self.__console.info(f"IK success for {robot_name}: {ik_result['iterations']} iterations, "f"error={ik_result['error']:.6f}")
+                        return ik_result
+                        
+            else:
+                self.__console.warning(f"IK failed for {robot_name}")
+                return None
+                
+        except Exception as e:
+            self.__console.error(f"Failed to compute inverse kinematics: {e}")
+            return None
 
-        
+    def set_target_tcp_pose(self, robot_name: str, position: list, orientation: list = None):
+        """Set target TCP pose and solve inverse kinematics"""
+        return self.compute_ik(robot_name, position, orientation)
+
+    def _initialize_tcp_table(self):
+        """Initialize TCP table with initial robot end-effector poses (all joints at 0)"""
+        try:
+            self.__console.info("Initializing TCP table with robot end-effector poses...")
+            
+            # Get all available robots
+            robot_names = self.__kinematics.get_robot_names()
+            
+            for robot_name in robot_names:
+                # Compute forward kinematics with all joints at 0 (default initialization)
+                fk_result = self.__kinematics.compute_fk(robot_name)
+                
+                if fk_result:
+                    # Add robot TCP to the table
+                    self.__tcpview_model.add_robot_tcp(robot_name, fk_result['position'], fk_result['orientation'])
+                    # self.__console.debug(f"Initialized TCP for {robot_name}: "f"pos={fk_result['position']}, " f"ori_deg={fk_result['orientation_deg']}")
+                else:
+                    self.__console.error(f"Failed to compute initial FK for robot {robot_name}")
+            
+            self.__console.info(f"TCP table initialized with {len(robot_names)} robots")
+            
+        except Exception as e:
+            self.__console.error(f"Failed to initialize TCP table: {e}")
 
 

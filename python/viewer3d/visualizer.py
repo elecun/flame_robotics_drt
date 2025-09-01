@@ -11,7 +11,6 @@ import zmq
 import json
 import numpy as np
 import threading
-# from pykin.robots.robot import Robot
 
 from util.logger.console import ConsoleLogger
 from urdf_parser import URDF
