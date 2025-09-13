@@ -82,6 +82,8 @@ class Open3DVisualizer(geometryAPI):
         
         # flags
         self.__show_origin_coord = False
+        self.__show_tcp_coord = False
+        self.__tcp_update_enabled = False
         
         # Message processing queue for GUI thread
         from collections import deque
@@ -138,11 +140,11 @@ class Open3DVisualizer(geometryAPI):
                 self._message_stats['processed'] += 1
                 
             # Log stats periodically for monitoring
-            if self._message_stats['processed'] % 100 == 0:
-                self.__console.debug(f"Message stats - Received: {self._message_stats['received']}, "
-                                   f"Processed: {self._message_stats['processed']}, "
-                                   f"Dropped: {self._message_stats['dropped']}, "
-                                   f"Pending: {len(self._pending_messages)}")
+            # if self._message_stats['processed'] % 100 == 0:
+            #     self.__console.debug(f"Message stats - Received: {self._message_stats['received']}, "
+            #                        f"Processed: {self._message_stats['processed']}, "
+            #                        f"Dropped: {self._message_stats['dropped']}, "
+            #                        f"Pending: {len(self._pending_messages)}")
                 
         except Exception as e:
             self.__console.error(f"Error processing pending messages: {e}")
@@ -186,6 +188,7 @@ class Open3DVisualizer(geometryAPI):
         self.on_show_origin_coord(show=config.get("show_origin", False))
         self.on_show_urdf(show=config.get("show_robot", False))
         self.on_show_floor(show=config.get("show_floor", False))
+        self.on_show_tcp_coord(show=config.get("show_tcp", False))
 
     def __on_data_received(self, multipart_data):
         """Callback function for zpipe data reception"""
@@ -236,6 +239,11 @@ class Open3DVisualizer(geometryAPI):
                 kwargs = msg_decoded["kwargs"]
                 function(self._scene, **kwargs)
                 
+                # Update TCP coordinate frame if enabled and joint angles were updated
+                if (self.__tcp_update_enabled and 
+                    function_name in ["API_set_joint_angles", "API_set_joint_angle"]):
+                    self._update_tcp_coordinate()
+                
                 # Force immediate redraw after geometry update
                 self._window.post_redraw()
                 
@@ -246,6 +254,19 @@ class Open3DVisualizer(geometryAPI):
                 self.__console.error(f"({self.__class__.__name__}) {e}")
             except Exception as e:
                 self.__console.error(f"({self.__class__.__name__}) {e}")
+    
+    def _update_tcp_coordinate(self):
+        """Update TCP coordinate frame based on current robot configuration"""
+        try:
+            # Get current TCP transform from robot
+            tcp_pos, tcp_ori = self.API_get_tcp_transform()
+            
+            # Update TCP coordinate frame
+            if "tcp_frame" in self._geometry_container:
+                self.API_update_tcp_coord(self._scene, "tcp_frame", tcp_pos, tcp_ori)
+                
+        except Exception as e:
+            self.__console.error(f"Failed to update TCP coordinate: {e}")
 
     def on_close(self):
         """ close window and stop all """
@@ -305,6 +326,21 @@ class Open3DVisualizer(geometryAPI):
             self._scene.scene.add_geometry("origin_frame", frame, material)
         else:
             self._scene.scene.remove_geometry("origin_frame")
+    
+    def on_show_tcp_coord(self, show:bool):
+        """ show TCP coordinate """
+        self.__show_tcp_coord = show
+        if show:
+            # Add TCP coordinate frame using API
+            self.API_add_tcp_coord(self._scene, "rt_tcp_frame", [0, 0, 0], [0, 0, 0], 0.1)
+            self.API_add_tcp_coord(self._scene, "dda_tcp_frame", [0, 0, 0], [0, 0, 0], 0.1)
+            self.__tcp_update_enabled = True
+            self.__console.debug("TCP coordinate frame added and update enabled")
+        else:
+            self.API_remove_geometry(self._scene, "rt_tcp_frame")
+            self.API_remove_geometry(self._scene, "dda_tcp_frame")
+            self.__tcp_update_enabled = False
+            self.__console.debug("TCP coordinate frame removed and update disabled")
 
     def on_show_urdf(self, show:bool):
         """ show robot URDF model"""

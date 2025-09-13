@@ -407,4 +407,131 @@ class geometryAPI:
                 # Mesh might not exist, continue
                 pass
 
+    def API_add_tcp_coord(self, scene, name: str = "tcp_frame", pos: list = [0, 0, 0], ori: list = [0, 0, 0], size: float = 0.05):
+        """Add TCP coordinate frame"""
+        self.__console.debug(f"Call API_add_tcp_coord : {name}")
+        
+        # Create coordinate frame
+        frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=size, origin=[0, 0, 0])
+        
+        # Apply rotation
+        R_matrix = frame.get_rotation_matrix_from_axis_angle(rotation=ori)
+        frame.rotate(R=R_matrix, center=[0, 0, 0])
+        frame.translate(translation=pos, relative=False)
+        
+        # Add to scene
+        material = rendering.MaterialRecord()
+        material.shader = "defaultLit"
+        scene.scene.add_geometry(name, frame, material)
+        
+        # Store in container with original data
+        self.__geometry_container[name] = frame
+        self.__geometry_container_original[name] = {
+            'type': 'tcp_coord',
+            'size': size,
+            'pos': pos,
+            'ori': ori
+        }
+
+    def API_update_tcp_coord(self, scene, name: str = "tcp_frame", pos: list = [0, 0, 0], ori: list = [0, 0, 0]):
+        """Update TCP coordinate frame position and orientation"""
+        self.__console.debug(f"Call API_update_tcp_coord : {name} pos={pos}, ori={ori}")
+        
+        if name not in self.__geometry_container:
+            self.__console.warning(f"TCP coordinate frame {name} not found")
+            return
+        
+        # Create transformation matrix
+        transform_matrix = np.eye(4)
+        
+        # Apply rotation
+        R_matrix = o3d.geometry.get_rotation_matrix_from_axis_angle(ori)
+        transform_matrix[:3, :3] = R_matrix
+        
+        # Apply translation
+        transform_matrix[:3, 3] = pos
+        
+        # Update geometry transform
+        scene.scene.set_geometry_transform(name, transform_matrix)
+        
+        # Update stored position and orientation
+        if name in self.__geometry_container_original:
+            self.__geometry_container_original[name]['pos'] = pos
+            self.__geometry_container_original[name]['ori'] = ori
+
+    def API_get_tcp_transform(self, urdf_name: str = None):
+        """Get TCP (end-effector) transform from loaded URDF robot
+        
+        Args:
+            urdf_name: Name of the URDF robot model. If None, uses first found URDF.
+            
+        Returns:
+            tuple: (position, orientation) where position is [x,y,z] and orientation is [rx,ry,rz] in radians
+        """
+        
+        # Find URDF model
+        target_urdf = None
+        if urdf_name is None:
+            # Find first URDF model
+            for name, info in self.__geometry_container.items():
+                if info.get('type') == 'urdf':
+                    target_urdf = info
+                    urdf_name = name
+                    break
+        else:
+            if urdf_name in self.__geometry_container and self.__geometry_container[urdf_name].get('type') == 'urdf':
+                target_urdf = self.__geometry_container[urdf_name]
+        
+        if target_urdf is None:
+            self.__console.warning("No URDF robot model found for TCP calculation")
+            return ([0, 0, 0], [0, 0, 0])
+        
+        try:
+            robot = target_urdf['robot']
+            base_T = target_urdf['base_transform']
+            joint_config = target_urdf.get('joint_config', {})
+            
+            # Get end-effector link name (usually the last link)
+            # This assumes the TCP is at the end-effector link
+            link_names = list(robot.link_map.keys())
+            if not link_names:
+                return ([0, 0, 0], [0, 0, 0])
+            
+            # Try to find a likely end-effector link name
+            end_effector_link = None
+            common_ee_names = ['tool_frame', 'tcp', 'end_effector', 'flange', 'tool0']
+            
+            for ee_name in common_ee_names:
+                if ee_name in robot.link_map:
+                    end_effector_link = ee_name
+                    break
+            
+            # If no common name found, use the last link
+            if end_effector_link is None:
+                end_effector_link = link_names[-1]
+            
+            # Get forward kinematics for end-effector
+            fk_dict = robot.link_fk(cfg=joint_config)
+            
+            if end_effector_link in fk_dict:
+                ee_transform = base_T @ fk_dict[end_effector_link]
+                
+                # Extract position
+                position = ee_transform[:3, 3].tolist()
+                
+                # Extract orientation (convert rotation matrix to euler angles)
+                from scipy.spatial.transform import Rotation
+                rotation_matrix = ee_transform[:3, :3]
+                rotation = Rotation.from_matrix(rotation_matrix)
+                orientation = rotation.as_euler('xyz').tolist()
+                
+                return (position, orientation)
+            else:
+                self.__console.warning(f"End-effector link '{end_effector_link}' not found in robot model")
+                return ([0, 0, 0], [0, 0, 0])
+                
+        except Exception as e:
+            self.__console.error(f"Failed to calculate TCP transform: {e}")
+            return ([0, 0, 0], [0, 0, 0])
+
     
