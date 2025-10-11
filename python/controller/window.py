@@ -112,15 +112,17 @@ class AppWindow(QMainWindow):
                     # Enable delete key functionality for geometry table
                     self.table_geometry.keyPressEvent = self.on_geometry_table_key_press
                     
-                    # Button events
+                    # QT component events
                     self.btn_open_pcd.clicked.connect(self.on_open_pcd)
                     self.btn_load_pcd.clicked.connect(self.on_load_pcd)
+                    self.btn_load_testpoints.clicked.connect(self.on_load_testpoints)
                     self.btn_run_simulation.clicked.connect(self.on_run_simulation)
                     self.btn_stop_simulation.clicked.connect(self.on_stop_simulation)
                     self.btn_geometry_remove_all.clicked.connect(self.on_btn_geometry_remove_all)
                     self.btn_tcp_move.clicked.connect(self.on_tcp_move)
                     self.btn_tcp_movestop.clicked.connect(self.on_tcp_movestop)
                     self.btn_set_initial_pose.clicked.connect(self.on_set_initial_pose)
+                    self.check_geometry_show_label.stateChanged.connect(self.on_geometry_show_label)
 
                     # Initialize TCP table with initial robot poses (all joints at 0)
                     self._initialize_tcp_table()
@@ -133,27 +135,38 @@ class AppWindow(QMainWindow):
 
     def __on_data_received(self, multipart_data):
         """Callback function for zpipe data reception"""
-        try:
-            if len(multipart_data) >= 2:
-                topic = multipart_data[0]
-                msg = multipart_data[1]
-                self.__call(topic, msg)
-        except Exception as e:
-            self.__console.error(f"({self.__class__.__name__}) Error processing received data: {e}")
+        if len(multipart_data) < 2:
+            self.__console.error(f"({self.__class__.__name__}) Invalid multipart data received")
+            return
+        
+        topic = multipart_data[0]
+        msg = multipart_data[1]
+
+        if topic.decode() == "call":
+            msg_decoded = json.loads(msg.decode('utf8').replace("'", '"'))
+            try:
+                function_name = msg_decoded["function"]
+                function = getattr(super(), function_name)
+                kwargs = msg_decoded["kwargs"]
+                function(self._scene, **kwargs)
+            except json.JSONDecodeError as e:
+                self.__console.error(f"({self.__class__.__name__}) {e}")
+            except Exception as e:
+                self.__console.error(f"({self.__class__.__name__}) {e}")
     
     def closeEvent(self, event:QCloseEvent) -> None:
         """ Handle close event """
         try:
             # Stop any ongoing IK computation first
-            self.__ik_stop_flag = True
-            self.__console.info("Stopping any ongoing IK computations")
+            # self.__ik_stop_flag = True
+            # self.__console.info("Stopping any ongoing IK computations")
             
-            # Clear all geometry in viewer3d before closing
-            self.__console.info("Clearing all geometry before closing controller window")
-            self.__call(socket=self.__socket, function="API_clear_all_geometry", kwargs={})
+            # # Clear all geometry in viewer3d before closing
+            # self.__console.info("Clearing all geometry before closing controller window")
+            # self.__call(socket=self.__socket, function="API_clear_all_geometry", kwargs={})
 
-            # Clear geometry table model
-            self.__geometry_model.clear_all_geometry()
+            # # Clear geometry table model
+            # self.__geometry_model.clear_all_geometry()
 
             # Clean up subscriber socket first
             if hasattr(self, '_AppWindow__socket') and self.__socket:
@@ -187,6 +200,15 @@ class AppWindow(QMainWindow):
         # Send to visualizer
         self.__call(socket=self.__socket, function="API_add_pcd", kwargs={"name":pcd_name, "path":pcd_file, "pos":[0.0, 0.0, 0.0], "point_size":0.2})
     
+    def on_load_testpoints(self):
+        """ Load test points from CSV file """
+        self.__console.info(f"({self.__class__.__name__}) Loading test points from CSV file")
+        pcd_file = self.edit_pcd_file.text()
+        csv_file = os.path.splitext(pcd_file)[0] + '.csv'
+        filename = os.path.splitext(os.path.basename(csv_file))[0]
+
+        # send to visualizer
+        self.__call(socket=self.__socket, function="API_load_testpoints", kwargs={"name":f"{filename}_tp", "path":csv_file})
 
     def on_run_simulation(self):
         """ Run Simulation """
@@ -296,6 +318,16 @@ class AppWindow(QMainWindow):
                 
         except Exception as e:
             self.__console.error(f"Failed to set initial pose: {e}")
+
+    def on_geometry_show_label(self, state):
+        """Handle geometry show label checkbox state change"""
+        try:
+            is_checked = state == 2  # Qt.CheckState.Checked = 2
+            self.__console.info(f"Geometry show label checkbox changed: {is_checked}")
+            self.__call(socket=self.__socket, function="API_show_label", kwargs={"show": is_checked})
+            
+        except Exception as e:
+            self.__console.error(f"Failed to handle geometry show label checkbox: {e}")
 
     def on_slide_control_update(self, value, joint:str):
         slider = self.sender()

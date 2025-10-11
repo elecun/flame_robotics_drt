@@ -101,9 +101,9 @@ background-color: rgb(212, 212, 212);</string>
     <widget class="QPushButton" name="btn_load_pcd">
      <property name="geometry">
       <rect>
-       <x>665</x>
-       <y>75</y>
-       <width>101</width>
+       <x>635</x>
+       <y>70</y>
+       <width>131</width>
        <height>41</height>
       </rect>
      </property>
@@ -116,7 +116,28 @@ background-color: rgb(212, 212, 212);</string>
       <string notr="true"/>
      </property>
      <property name="text">
-      <string>Load</string>
+      <string>Load PCD</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_load_testpoints">
+     <property name="geometry">
+      <rect>
+       <x>430</x>
+       <y>70</y>
+       <width>186</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>NanumSquare</family>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>Load Test Points</string>
      </property>
     </widget>
    </widget>
@@ -187,7 +208,7 @@ background-color: rgb(255, 100, 100);</string>
      </font>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -1252,8 +1273,8 @@ background-color: rgb(212, 212, 212);</string>
      <widget class="QPushButton" name="btn_geometry_remove_all">
       <property name="geometry">
        <rect>
-        <x>15</x>
-        <y>330</y>
+        <x>565</x>
+        <y>505</y>
         <width>206</width>
         <height>31</height>
        </rect>
@@ -1281,11 +1302,27 @@ background-color: rgb(200,200,200);</string>
         <x>5</x>
         <y>5</y>
         <width>771</width>
-        <height>321</height>
+        <height>486</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(0, 0, 0);</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="check_geometry_show_label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>515</y>
+        <width>131</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Show Label</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
       </property>
      </widget>
     </widget>
