@@ -1,3 +1,6 @@
 [submodule "flame"]
 	path = flame
 	url = https://github.com/elecun/flame.git
+[submodule "3rdparty/rbpodo"]
+	path = 3rdparty/rbpodo
+	url = https://github.com/RainbowRobotics/rbpodo.git
