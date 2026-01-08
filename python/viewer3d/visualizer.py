@@ -138,11 +138,11 @@ class Open3DVisualizer(geometryAPI):
                 self._message_stats['processed'] += 1
                 
             # Log stats periodically for monitoring
-            if self._message_stats['processed'] % 100 == 0:
-                self.__console.debug(f"Message stats - Received: {self._message_stats['received']}, "
-                                   f"Processed: {self._message_stats['processed']}, "
-                                   f"Dropped: {self._message_stats['dropped']}, "
-                                   f"Pending: {len(self._pending_messages)}")
+            # if self._message_stats['processed'] % 100 == 0:
+            #     self.__console.debug(f"Message stats - Received: {self._message_stats['received']}, "
+            #                        f"Processed: {self._message_stats['processed']}, "
+            #                        f"Dropped: {self._message_stats['dropped']}, "
+            #                        f"Pending: {len(self._pending_messages)}")
                 
         except Exception as e:
             self.__console.error(f"Error processing pending messages: {e}")
