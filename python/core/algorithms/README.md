@@ -61,15 +61,29 @@
 ## Path Optimization
 - **Folder**: `algorithms/optimization/`
 - **Usage**: Use `--optimize <method>` in `planner_main.py`.
-### 1. Path Pruning
-- **Method**: `path_pruning`
-- **Description**: Iteratively attempts to connect non-adjacent waypoints with straight lines, removing intermediate nodes if a collision-free shortcut exists.
-- **Effect**: Reduces number of waypoints and path length.
+### Path Pruning (`path_pruning`)
+Iteratively attempts to connect non-adjacent waypoints with collision-free straight lines to remove redundant waypoints and shorten the path.
+- **Config**: `path_pruning.json`
 
-### 2. STOMP (Stochastic Trajectory Optimization)
-- **Method**: `stomp`
-- **Description**: Generates noisy trajectory samples around the current path and combines them based on costs (smoothness + obstacle distance) to refine the path.
-- **Effect**: Smoothes the path and improves clearance from obstacles.
+### STOMP (`stomp`)
+**Stochastic Trajectory Optimization for Motion Planning**. Generates noisy trajectory samples and iteratively updates the path to minimize a cost function combining smoothness and obstacle avoidance.
+- **Config**: `stomp.json`
+- **Reference**: Kalakrishnan et al., "STOMP: Stochastic trajectory optimization for motion planning" (ICRA 2011).
+
+### GPMP2 (`gpmp2`)
+**Gaussian Process Motion Planning 2**. Models the trajectory as a Gaussian Process and optimizes it using gradient-based methods (L-BFGS-B). Minimizes smoothness cost (GP prior) and obstacle cost.
+- **Config**: `gpmp2.json`
+- **Reference**: Dong et al., "Motion Planning as Probabilistic Inference using Gaussian Processes and Factor Graphs" (RSS 2016).
+
+### TrajOpt (`trajopt`)
+**Trajectory Optimization**. Uses Sequential Convex Optimization (via `scipy.optimize.minimize` SLSQP) to optimize a trajectory for smoothness while satisfying collision constraints.
+- **Config**: `trajopt.json`
+- **Reference**: Schulman et al., "Motion Planning with Sequential Convex Optimization and Convex Collision Checking" (IJRR 2014).
+
+### TOPP-RA (`topp_ra`)
+**Time-Optimal Path Parameterization**. Resamples the geometric path into a time-parameterized trajectory (uniform time steps) respecting velocity and acceleration limits. This implementation uses a simplified trapezoidal velocity profile generator.
+- **Config**: `topp_ra.json`
+- **Reference**: Pham et al., "A New Approach to Time-Optimal Path Parameterization based on Reachability Analysis" (TRO 2018).
 
 ## 사용 방법
 

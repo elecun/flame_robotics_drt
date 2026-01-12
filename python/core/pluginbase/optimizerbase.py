@@ -3,8 +3,17 @@ from typing import List
 import numpy as np
 
 class OptimizerBase(ABC):
-    def __init__(self):
-        pass
+    def __init__(self, config_path: str = None):
+        if config_path is None:
+            # Default to json with same name in the same directory
+            # This relies on the child class being in a file that has a corresponding .json
+            # However, since this is a base class, __file__ here refers to optimizerbase.py.
+            # We need to rely on the child class passing the path or inferring it from the child module.
+            # But simpler: The child class calls super().__init__() and we can expect them to handle path or we inspect.
+            pass
+        
+        self.config = {}
+
 
     @abstractmethod
     def optimize(self, path: List[np.ndarray], planner) -> List[np.ndarray]:

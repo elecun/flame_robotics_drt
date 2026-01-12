@@ -7,12 +7,23 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../p
 from optimizerbase import OptimizerBase
 
 class Stomp(OptimizerBase):
-    def __init__(self):
-        super().__init__()
-        self.num_iterations = 50
-        self.num_samples = 20
-        self.std_dev = 0.5  # Standard deviation for noise
-        self.smoothing_factor = 0.1 # Very basic control cost
+    def __init__(self, config_path: str = None):
+        import json
+        if config_path is None:
+             config_path = os.path.splitext(__file__)[0] + '.json'
+        super().__init__(config_path)
+        
+        try:
+            with open(config_path, 'r') as f:
+                self.config = json.load(f)
+        except Exception as e:
+            print(f"[STOMP] Warning: Could not load config: {e}")
+            self.config = {}
+
+        self.num_iterations = self.config.get("num_iterations", 50)
+        self.num_samples = self.config.get("num_samples", 20)
+        self.std_dev_factor = self.config.get("std_dev_factor", 0.5)
+        self.smoothing_factor = self.config.get("smoothing_factor", 0.1)
 
     def optimize(self, path: list, planner) -> list:
         if not path or len(path) < 3:
@@ -31,7 +42,7 @@ class Stomp(OptimizerBase):
         diffs = np.diff(current_path, axis=0)
         dists = np.linalg.norm(diffs, axis=1)
         avg_dist = np.mean(dists)
-        current_std_dev = avg_dist * 0.5
+        current_std_dev = avg_dist * self.std_dev_factor
         print(f"[STOMP] Initializing with avg_step_dist={avg_dist:.2f}, std_dev={current_std_dev:.2f}")
 
         # Smoothing Kernel (Simple Box or Gaussian-like)

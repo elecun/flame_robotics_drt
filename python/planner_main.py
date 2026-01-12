@@ -104,7 +104,7 @@ def main():
     # Goal: Default explicit value (reverted to previous default)
     parser.add_argument('--goal', nargs=6, type=float, default=[-150, -300, 0, 0, 0, 0], help='Goal pose x y z r p y')
     parser.add_argument('--show_coord', action='store_true', help='Show coordinate frames for waypoints')
-    parser.add_argument('--optimize', type=str, default=None, help='Optimization method (e.g., path_pruning, stomp)')
+    parser.add_argument('--optimize', type=str, default=None, help='Optimization method (e.g., path_pruning, stomp, gpmp2, trajopt, topp_ra)')
     args = parser.parse_args()
     
     # ... (STL Loading, Start/Goal gen remain same)

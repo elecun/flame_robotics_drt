@@ -7,8 +7,16 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../p
 from optimizerbase import OptimizerBase
 
 class PathPruning(OptimizerBase):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config_path: str = None):
+        if config_path is None:
+             config_path = os.path.splitext(__file__)[0] + '.json'
+        super().__init__(config_path)
+        
+        try:
+            with open(config_path, 'r') as f:
+                self.config = json.load(f)
+        except:
+            self.config = {}
 
     def optimize(self, path: list, planner) -> list:
         if not path or len(path) < 3:
