@@ -47,6 +47,16 @@
   - `weights`: Dictionary with `pos` and `orient` weights.
 - **Reference**: N/A (Standard RRT in configuration space)
 
+### PRM (`prm`)
+**Probabilistic RoadMap**. Constructs a visibility graph by sampling N free configurations and connecting them to k-nearest neighbors. Finds a path by querying the roadmap.
+- **Config**: `prm.json`
+- **Reference**: Kavraki et al., "Probabilistic roadmaps for path planning in high-dimensional configuration spaces" (TRA 1996).
+
+### BIT* (`bit_star`)
+**Batch Informed Trees**. Combines the efficiency of graph-based search (like PRM) with the asymptotic optimality of tree-based search (like RRT*). Uses batches of samples constrained by an ellipsoidal heuristic region.
+- **Config**: `bit_star.json`
+- **Reference**: Gammell et al., "Batch Informed Trees (BIT*): Geometric Planning via Information Theoretic Search" (ICRA 2015).
+
 ### 6. Task-space RRT*
 - **File**: `algorithms/task_space_rrt_star.py`
 - **Description**: Asymptotically optimal RRT* in 6D task space with weighted distance.
