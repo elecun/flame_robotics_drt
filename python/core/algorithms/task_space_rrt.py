@@ -2,8 +2,9 @@ import numpy as np
 import json
 import os
 import open3d as o3d
-from typing import List, Union
+from typing import List, Union, Optional
 import sys
+import logging
 
 # Adjust path to import PlannerBase
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../pluginbase')))
@@ -32,9 +33,12 @@ class TaskSpaceRRT(PlannerBase):
         })
         
         self.scene = None
+        self.tool_mesh = None
+        self.static_legacy_meshes = [] # Keep legacy meshes for direct O3D intersection check
 
     def add_static_object(self, object_model):
         self.static_objects.append(object_model)
+        self.static_legacy_meshes.append(object_model) # Store copy for direct mesh check
         if self.scene is None:
              self.scene = o3d.t.geometry.RaycastingScene()
         try:
@@ -43,39 +47,28 @@ class TaskSpaceRRT(PlannerBase):
         except Exception as e:
             print(f"Error adding object to scene: {e}")
 
-    def generate(self, current_pose: Union[List[float], np.ndarray], target_pose: Union[List[float], np.ndarray]) -> List[np.ndarray]:
-        current_pose = np.array(current_pose, dtype=float)
-        target_pose = np.array(target_pose, dtype=float)
+    def generate(self, current_pose: Union[List[float], np.ndarray], target_pose: Union[List[float], np.ndarray], step_callback: Optional[callable] = None) -> List[np.ndarray]:
+        current_pose = np.array(current_pose)
+        target_pose = np.array(target_pose)
         
-        # 6D Nodes
+        # Handle Don't Care (NaN) in target
+        mask = np.isnan(target_pose)
+        if np.any(mask):
+            target_pose[mask] = current_pose[mask]
+            
         nodes = [current_pose]
         parents = {0: None}
         
-        path_found = False
-        goal_node_idx = -1
+        w_pos = self.weights['pos']
+        w_ori = self.weights['orient']
         
-        # Identify Don't Care in Goal
-        # If NaN, we don't try to converge to it, effectively.
-        # But for RRT to work in 6D, we need a target.
-        # If goal has NaNs, we sample those dimensions freely? 
-        # Or we treat distance as 0 for those dims?
-        # Let's treat distance as 0 for NaN dimensions in Goal sampling.
+        min_dist_to_goal = float('inf')
         
         for i in range(self.max_iter):
-            # Sample
+            logging.info(f"Iteration {i+1}/{self.max_iter} | Tree Size: {len(nodes)} | Min Dist: {min_dist_to_goal:.2f}")
+            # 1. Sample
             if np.random.random() < self.goal_bias:
-                # Sample Goal
-                # If NaN, we can pick random value or keep current?
-                # RRT bias means we want to pull towards goal.
-                # If goal is don't care, we don't pull? 
-                # Let's use target_pose but replace NaNs with random or zero.
-                # Actually, if NaN, we just don't care where it is.
-                # We can sample random for NaN dims.
-                rnd_point = np.copy(target_pose)
-                mask = np.isnan(rnd_point)
-                rnd_point[mask] = np.random.uniform(-np.pi, np.pi, size=np.sum(mask)) # Assuming angle dims mostly
-                # For Position NaNs? (Unlikely but possible).
-                
+                rnd_point = target_pose
             else:
                 rnd_point = np.zeros(6)
                 rnd_point[0] = np.random.uniform(self.bounds['x_min'], self.bounds['x_max'])
@@ -85,114 +78,112 @@ class TaskSpaceRRT(PlannerBase):
                 rnd_point[4] = np.random.uniform(self.bounds['pitch_min'], self.bounds['pitch_max'])
                 rnd_point[5] = np.random.uniform(self.bounds['yaw_min'], self.bounds['yaw_max'])
                 
-            # Nearest
-            # Weighted Distance
+            # 2. Nearest
             diffs = np.array(nodes) - rnd_point
-            # Weighted Metric: Pos diff + Orient diff (scaled)
-            # Simple Euclidean on 6D with weights
             pos_diff = diffs[:, :3]
             orient_diff = diffs[:, 3:]
             
-            # Handle orientation periodicity? standard RRT often ignores it, 
-            # but for correctness we should use angular diff. Simple absolute diff for now.
-            
-            w_pos = self.weights['pos']
-            w_ori = self.weights['orient']
-            
+            # Weighted Distance
             weighted_sq_dists = w_pos * np.sum(pos_diff**2, axis=1) + w_ori * np.sum(orient_diff**2, axis=1)
             nearest_idx = np.argmin(weighted_sq_dists)
             nearest_node = nodes[nearest_idx]
             
-            # Steer
+            # 3. Steer
             direction = rnd_point - nearest_node
-            # Normalize direction? 
-            # We need a metric length
-            length = np.sqrt(w_pos * np.sum(direction[:3]**2) + w_ori * np.sum(direction[3:]**2))
+            dist = np.sqrt(w_pos * np.sum(direction[:3]**2) + w_ori * np.sum(direction[3:]**2))
             
-            if length == 0:
+            if dist == 0:
                 continue
+                
+            # Cap at step_size
+            ratio = min(1.0, self.step_size / dist)
+            new_point = nearest_node + direction * ratio
             
-            direction = direction / length # Normalized in Weighted Space?
-            # Actually, standard steering moves fixed step size.
-            # Let's move in the raw direction but clamped.
-            
-            # Re-calculating raw length for step size limiting
-            # Usually step size applies to position. Orientation changes accordingly.
-            raw_pos_len = np.linalg.norm(direction[:3])
-            
-            # If we enforce step size on position mainly:
-            # factor = step_size / raw_pos_len
-            # But we are in 6D. Let's use the weighted length limit.
-            
-            factor = min(self.step_size, length)
-            # new_point = nearest + dir * factor? 
-            # If dir is normalized in weighted space, this is tricky.
-            # Simple approach: interpolate linearly.
-            
-            ratio = min(1.0, self.step_size / length)
-            new_point = nearest_node + (rnd_point - nearest_node) * ratio
-            
+            # 4. Collision Check
             if not self._check_collision(nearest_node, new_point):
                 nodes.append(new_point)
                 new_idx = len(nodes) - 1
                 parents[new_idx] = nearest_idx
                 
-                # Check Goal
-                # Compute distance to goal (respecting ignore NaNs)
-                delta = new_point - target_pose
-                # Mask NaNs
-                mask = np.isnan(target_pose)
-                delta[mask] = 0.0
+                # Check Callback
+                if step_callback:
+                    step_callback(nodes, parents)
                 
-                dist_to_goal = np.sqrt(w_pos * np.sum(delta[:3]**2) + w_ori * np.sum(delta[3:]**2))
+                # Update min distance to goal
+                delta = target_pose - new_point
+                d_goal_current = np.sqrt(w_pos * np.sum(delta[:3]**2) + w_ori * np.sum(delta[3:]**2))
+                if d_goal_current < min_dist_to_goal:
+                    min_dist_to_goal = d_goal_current
                 
-                if dist_to_goal < self.step_size:
-                    # Reachable?
-                    # Check collision to goal (with NaNs replaced by current vals)
-                    final_node = np.copy(target_pose)
-                    final_node[mask] = new_point[mask]
-                    
-                    if not self._check_collision(new_point, final_node):
-                        nodes.append(final_node)
-                        goal_node_idx = len(nodes) - 1
-                        parents[goal_node_idx] = new_idx
-                        path_found = True
-                        break
+                # 5. Check Goal
+                if d_goal_current < self.step_size: # Close enough
+                    if not self._check_collision(new_point, target_pose):
+                        nodes.append(target_pose)
+                        goal_idx = len(nodes) - 1
+                        parents[goal_idx] = new_idx
                         
-        if path_found:
-            path = []
-            curr_idx = goal_node_idx
-            while curr_idx is not None:
-                path.append(nodes[curr_idx])
-                curr_idx = parents[curr_idx]
-            return path[::-1]
-            
-        print("Task-space RRT failed.")
-        return []
+                        # Reconstruct
+                        path = []
+                        curr = goal_idx
+                        while curr is not None:
+                            path.append(nodes[curr])
+                            curr = parents[curr]
+                        return path[::-1]
+                        
+        logging.error(f"Task Space RRT failed to find path. Max iterations ({self.max_iter}) reached.")
+        logging.error(f"Closest distance to goal achieved: {min_dist_to_goal:.4f}")
+        return [] 
 
     def _check_collision(self, p1, p2):
+        # 1. Point Robot Check (Raycast) - Always fast first pass
         if self.scene is None:
             return False
             
-        # We only check collision for Position (3D)
-        # Orientation collision is not checked against environment here (point robot assumption for collision)
-        # If user wanted swept volume collision, that requires robot kinematics.
-        # User prompt implies "endeffector position" and "static object".
-        # So we just check line segment p1[:3] to p2[:3]
-        
         pos1 = p1[:3]
         pos2 = p2[:3]
-        
         direction = pos2 - pos1
         length = np.linalg.norm(direction)
-        if length < 1e-6:
-            return False
-        direction /= length
         
-        rays = o3d.core.Tensor([[pos1[0], pos1[1], pos1[2], direction[0], direction[1], direction[2]]], dtype=o3d.core.Dtype.Float32)
-        ans = self.scene.cast_rays(rays)
-        t_hit = ans['t_hit'][0].item()
-        
-        if np.isfinite(t_hit) and t_hit < length:
-            return True
+        # Ray Check
+        if length > 1e-6:
+            dir_norm = direction / length
+            rays = o3d.core.Tensor([[pos1[0], pos1[1], pos1[2], dir_norm[0], dir_norm[1], dir_norm[2]]], dtype=o3d.core.Dtype.Float32)
+            ans = self.scene.cast_rays(rays)
+            t_hit = ans['t_hit'][0].item()
+            if np.isfinite(t_hit) and t_hit < length:
+                return True
+                
+        # 2. Tool Mesh Check (if tool exists)
+        if self.tool_mesh is not None:
+             # Lazy init point cloud
+             if not hasattr(self, '_tool_pcd'):
+                 self._tool_pcd = self.tool_mesh.sample_points_poisson_disk(number_of_points=100)
+                 self._tool_pcd_pts = np.asarray(self._tool_pcd.points) # Nx3
+
+             check_poses = [p2]
+             
+             # Denser check for swept volume
+             # Check every 0.5 units (high resolution)
+             if length > 0.5:
+                 num_inter = int(length / 0.5)
+                 for i in range(1, num_inter + 1):
+                     ratio = i / (num_inter + 1)
+                     # Interpolate 6D
+                     inter_pose = p1 + (p2 - p1) * ratio
+                     check_poses.append(inter_pose)
+             
+             for pose in check_poses:
+                 # Transform points: R * P + T
+                 R = o3d.geometry.get_rotation_matrix_from_xyz(pose[3:])
+                 transformed_pts = (R @ self._tool_pcd_pts.T).T + pose[:3]
+                 
+                 # Check these points against Scene
+                 query = o3d.core.Tensor(transformed_pts, dtype=o3d.core.Dtype.Float32)
+                 dist = self.scene.compute_distance(query) # Unsigned distance
+                 min_dist = dist.min().item()
+                 
+                 if min_dist < 1.0: # 1mm tolerance
+                     return True
+                     
         return False
+

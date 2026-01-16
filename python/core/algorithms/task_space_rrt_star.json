@@ -1,7 +1,8 @@
 {
-    "step_size": 100.0,
+    "step_size": 10.0,
     "max_iter": 1000,
-    "goal_bias": 0.1,
+    "search_radius": 50.0,
+    "goal_bias": 0.8,
     "weights": {
         "pos": 1.0,
         "orient": 0.5

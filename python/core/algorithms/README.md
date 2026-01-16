@@ -95,6 +95,11 @@ Iteratively attempts to connect non-adjacent waypoints with collision-free strai
 - **Config**: `topp_ra.json`
 - **Reference**: Pham et al., "A New Approach to Time-Optimal Path Parameterization based on Reachability Analysis" (TRO 2018).
 
+### B-Spline (`bspline`)
+**B-Spline Smoothing**. Fits a B-spline curve to the waypoints using `scipy.interpolate.splprep` and resamples it to generate a smooth path.
+- **Config**: `bspline.json`
+- **Reference**: Standard B-spline interpolation/approximation.
+
 ## 사용 방법
 
 각 알고리즘은 `planner_main.py`를 통해 실행할 수 있습니다.

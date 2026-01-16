@@ -1,7 +1,6 @@
 {
     "step_size": 100.0,
     "max_iter": 1000,
-    "goal_bias": 0.1,
     "weights": {
         "pos": 1.0,
         "orient": 0.5

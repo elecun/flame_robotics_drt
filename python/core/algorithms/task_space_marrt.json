@@ -1,0 +1,7 @@
+{
+    "step_size": 20.0,
+    "max_iterations": 2000,
+    "goal_bias": 0.1,
+    "retraction_steps": 5,
+    "retraction_distance": 2.0
+}

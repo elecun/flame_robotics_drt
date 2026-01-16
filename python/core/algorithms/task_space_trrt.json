@@ -1,0 +1,9 @@
+{
+    "step_size": 5.0,
+    "max_iterations": 2000,
+    "goal_bias": 0.1,
+    "initial_temperature": 100.0,
+    "temp_change_factor": 0.01,
+    "temp_increase_rate": 1.5,
+    "min_temperature": 1e-4
+}

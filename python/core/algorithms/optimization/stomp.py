@@ -25,6 +25,16 @@ class Stomp(OptimizerBase):
         self.std_dev_factor = self.config.get("std_dev_factor", 0.5)
         self.smoothing_factor = self.config.get("smoothing_factor", 0.1)
 
+    def _is_collision_free(self, path, planner):
+        if hasattr(planner, 'check_collision_on_path'): # If planner has efficient bulk check
+             return not planner.check_collision_on_path(path)
+        
+        # Fallback to segment check
+        for i in range(len(path) - 1):
+            if planner._check_collision(path[i], path[i+1]):
+                return False
+        return True
+
     def optimize(self, path: list, planner) -> list:
         if not path or len(path) < 3:
             print("[STOMP] Path too short to optimize.")
@@ -34,9 +44,12 @@ class Stomp(OptimizerBase):
         n_waypoints = len(current_path)
         dim = current_path.shape[1]
         
-        # Determine fixed start and goal
         start_pose = current_path[0].copy()
         goal_pose = current_path[-1].copy()
+        
+        best_valid_path = None
+        if self._is_collision_free(current_path, planner):
+            best_valid_path = current_path.copy()
 
         # Adaptive Noise Scale
         diffs = np.diff(current_path, axis=0)
@@ -45,24 +58,18 @@ class Stomp(OptimizerBase):
         current_std_dev = avg_dist * self.std_dev_factor
         print(f"[STOMP] Initializing with avg_step_dist={avg_dist:.2f}, std_dev={current_std_dev:.2f}")
 
-        # Smoothing Kernel (Simple Box or Gaussian-like)
+        # Smoothing Kernel
         kernel_size = 5
         kernel = np.ones(kernel_size) / kernel_size
 
         for iter_num in range(self.num_iterations):
-            # 1. Generate Correlated Noise (Smooth Noise)
-            # Independent noise
+            # 1. Generate Correlated Noise
             raw_noise = np.random.normal(0, current_std_dev, (self.num_samples, n_waypoints, dim))
-            
-            # Smooth the noise along waypoint axis
-            # Only apply to inner points, start/goal noise should be 0 (enforced later)
             noise = np.zeros_like(raw_noise)
             for i in range(self.num_samples):
                 for d in range(dim):
-                    # Pad to keep size
                     noise[i, :, d] = np.convolve(raw_noise[i, :, d], kernel, mode='same')
             
-            # Enforce zero noise at start/goal
             noise[:, 0, :] = 0
             noise[:, -1, :] = 0
             
@@ -72,31 +79,13 @@ class Stomp(OptimizerBase):
             
             # 3. Evaluate Costs
             costs = np.zeros(self.num_samples)
-            
             for i in range(self.num_samples):
                 cand = candidates[i]
-                
-                # Smoothness Cost (Jerk / Acceleration) - using 2nd derivative approx
-                # vel = np.diff(cand, axis=0)
-                # acc = np.diff(vel, axis=0)
-                # smoothness_cost = np.sum(np.sum(acc**2, axis=1)) 
-                
-                # Distance Cost (Minimizing length)
                 diffs = np.diff(cand, axis=0)
                 length_cost = np.sum(np.sqrt(np.sum(diffs**2, axis=1)))
                 
-                # Obstacle Cost
                 obstacle_cost = 0.0
-                in_collision = False
-                
-                # Fast check (only waypoints)
-                # To be precise we should check segments
-                for j in range(n_waypoints - 1):
-                    if planner._check_collision(cand[j], cand[j+1]):
-                         in_collision = True
-                         break
-                
-                if in_collision:
+                if not self._is_collision_free(cand, planner):
                     obstacle_cost = 1e9
                 
                 costs[i] = length_cost + obstacle_cost
@@ -106,41 +95,64 @@ class Stomp(OptimizerBase):
             min_cost = costs[best_idx]
             
             if min_cost < 1e9:
-                 # Probability Weights
                  exp_cost = np.exp(-10.0 * (costs - min_cost) / (np.max(costs) - min_cost + 1e-6))
                  weights = exp_cost / np.sum(exp_cost)
                  
-                 # Weighted Average Update
                  weighted_change = np.zeros_like(current_path)
                  for i in range(self.num_samples):
                      weighted_change += (candidates[i] - current_path) * weights[i]
                      
-                 # Apply update
-                 current_path += weighted_change
+                 # Proposed update
+                 updated_path = current_path + weighted_change
+                 updated_path[0] = start_pose
+                 updated_path[-1] = goal_pose
                  
-                 # 5. Explicit Smoothing with Edge Padding
-                 # Pad properly to avoid pulling boundaries to zero
+                 # 5. Smoothing (with safety check)
+                 smoothed_path = updated_path.copy()
                  pad_size = kernel_size // 2
                  for d in range(dim):
-                     col = current_path[:, d]
-                     # Pad with edge values
+                     col = smoothed_path[:, d]
                      padded = np.pad(col, (pad_size, pad_size), mode='edge')
-                     # Convolve valid part
                      smoothed = np.convolve(padded, kernel, mode='valid')
-                     current_path[:, d] = smoothed
+                     smoothed_path[:, d] = smoothed
+                 smoothed_path[0] = start_pose
+                 smoothed_path[-1] = goal_pose
+
+                 # Safety Checks
+                 accepted = False
                  
-                 # Re-enforce Start/Goal
-                 current_path[0] = start_pose
-                 current_path[-1] = goal_pose
+                 # Try Smoothed
+                 if self._is_collision_free(smoothed_path, planner):
+                     current_path = smoothed_path
+                     best_valid_path = current_path.copy()
+                     accepted = True
+                 # Try Unsmoothed
+                 elif self._is_collision_free(updated_path, planner):
+                     print(f"[STOMP] Smoothing caused collision. Using unsmoothed update.")
+                     current_path = updated_path
+                     best_valid_path = current_path.copy()
+                     accepted = True
+                 else:
+                     # Both collided.
+                     # We can either reject the update or accept strictly better cost even if invalid?
+                     # For safety, rejection is better, but might get stuck.
+                     # Let's revert to previous valid if available, OR keep updated if it's "less bad"?
+                     # But cost function is binary 1e9.
+                     print(f"[STOMP] Update caused collision. Skipping update for this iter.")
+                     # current_path remains unchanged
+                     pass
                  
                  if iter_num % 10 == 0:
                      print(f"[STOMP] Iter {iter_num}: Min Cost={min_cost:.2f}")
                      
-                 # Decay noise
                  current_std_dev *= 0.95
             else:
-                 # All collided? Try reducing noise
                  current_std_dev *= 0.5
-            
-        return [p for p in current_path]
+        
+        # Return best valid path if we have one, otherwise current (even if invalid)
+        if best_valid_path is not None:
+             return [p for p in best_valid_path]
+        else:
+             print("[STOMP] Warning: Could not find any collision-free path.")
+             return [p for p in current_path]
 

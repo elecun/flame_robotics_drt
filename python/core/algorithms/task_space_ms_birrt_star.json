@@ -1,0 +1,25 @@
+{
+    "base_step_size": 10.0,
+    "max_step_size": 50.0,
+    "max_iterations": 3000,
+    "goal_bias": 0.05,
+    "dynamic_step_factor": 0.5,
+    "weights": {
+        "pos": 1.0,
+        "orient": 0.5
+    },
+    "workspace_bounds": {
+        "x_min": -500.0,
+        "x_max": 500.0,
+        "y_min": -1500.0,
+        "y_max": 500.0,
+        "z_min": -500.0,
+        "z_max": 500.0,
+        "roll_min": -3.14159,
+        "roll_max": 3.14159,
+        "pitch_min": -3.14159,
+        "pitch_max": 3.14159,
+        "yaw_min": -3.14159,
+        "yaw_max": 3.14159
+    }
+}

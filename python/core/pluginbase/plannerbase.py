@@ -11,7 +11,7 @@ class PlannerBase(ABC):
         self.static_objects = []
 
     @abstractmethod
-    def generate(self, current_pose: Union[List[float], np.ndarray], target_pose: Union[List[float], np.ndarray]) -> List[np.ndarray]:
+    def generate(self, current_pose: Union[List[float], np.ndarray], target_pose: Union[List[float], np.ndarray], step_callback: Optional[callable] = None) -> List[np.ndarray]:
         """
         Generate a path from current_pose to target_pose.
         
@@ -34,3 +34,14 @@ class PlannerBase(ABC):
             object_model: The static object model (e.g., Open3D geometry).
         """
         pass
+
+    def set_tool_geometry(self, tool_mesh):
+        """
+        Set the tool geometry for collision checking.
+        
+        Args:
+            tool_mesh: Open3D TriangleMesh of the tool.
+                       The mesh should be defined relative to the end-effector frame (origin at mount point).
+        """
+        self.tool_mesh = tool_mesh
+
