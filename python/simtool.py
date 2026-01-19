@@ -1,5 +1,5 @@
 '''
-DRT 3D Window Controller with Qt GUI
+DRT 3D Control Tools
 @auhtor Byunghun Hwang<bh.hwnag@iae.re.kr>
 '''
 
@@ -27,14 +27,14 @@ import argparse
 import multiprocessing
 import zmq
 from multiprocessing import Process
-from controller.window import AppWindow as ControlWindow
+from simtool.window import AppWindow as ControlWindow
 from util.logger.console import ConsoleLogger
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', nargs='?', required=False, help="Configuration File(*.cfg)", default="simulation.cfg")
+    parser.add_argument('--config', nargs='?', required=False, help="Configuration File(*.cfg)", default="simtool.cfg")
     parser.add_argument('--verbose_level', nargs='?', required=False, help="Set Verbose Level", default="DEBUG")
     args = parser.parse_args()
 

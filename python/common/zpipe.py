@@ -300,7 +300,7 @@ class ZPipe:
     _instance = None
     _context = None
     _sockets: Dict[str, AsyncZSocket] = {}
-    _lock = threading.Lock()
+    _lock = threading.RLock()
     _console = None
     
     def __new__(cls, *args, **kwargs):

@@ -14,7 +14,7 @@ $ pip install -r requirements.txt
 $ python -m venv venv
 $ source ./venv/bin/activate
 (venv)$ cd python
-(venv)$ python viewer3d.py
+(venv)$ python viewer.py
 ```
 
 3. Launch Simulation Controller

@@ -1,20 +1,17 @@
-'''
-DRT 3D Window Controller with Qt GUI
-@auhtor Byunghun Hwang<bh.hwnag@iae.re.kr>
-'''
-
-try:
-    from PyQt6.QtGui import QImage, QPixmap, QCloseEvent, QFontDatabase, QFont
-    from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QMessageBox
-    from PyQt6.uic import loadUi
-    from PyQt6.QtCore import QObject, Qt, QTimer, QThread, pyqtSignal
-except ImportError:
-    print("PyQt6 is required to run this application.")
+"""
+DRT Viewer 3D Application
+@author Byunghun Hwang <bh.hwang@iae.re.kr>
+"""
 
 import sys, os
 import pathlib
 import json
-import atexit
+import open3d as o3d
+import zmq
+import argparse
+
+from util.logger.console import ConsoleLogger
+from viewer.visualizer import Open3DVisualizer
 from common.zpipe import zpipe_create_pipe, zpipe_destroy_pipe
 from common.zpipe import ZPipe
 
@@ -23,24 +20,16 @@ ROOT_PATH = pathlib.Path(__file__).parent.parent
 APP_NAME = pathlib.Path(__file__).stem
 sys.path.append(ROOT_PATH.as_posix())
 
-import argparse
-import multiprocessing
-import zmq
-from multiprocessing import Process
-from controller.window import AppWindow as ControlWindow
-from util.logger.console import ConsoleLogger
-
 
 if __name__ == "__main__":
 
+    console = ConsoleLogger.get_logger(level="DEBUG")
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', nargs='?', required=False, help="Configuration File(*.cfg)", default="simulation.cfg")
+    parser.add_argument('--config', nargs='?', required=False, help="Configuration File(*.cfg)", default="viewer.cfg")
     parser.add_argument('--verbose_level', nargs='?', required=False, help="Set Verbose Level", default="DEBUG")
     args = parser.parse_args()
 
-    console = ConsoleLogger.get_logger(level="DEBUG")
-
-    app = None
     try:
         with open(args.config, "r") as cfile:
             configure = json.load(cfile)
@@ -54,30 +43,19 @@ if __name__ == "__main__":
                 console.debug(f"Application Path : {configure['app_path']}")
                 console.debug(f"Verbose Level : {configure['verbose_level']}")
 
-            # zmq pipeline
             # create zpipe context
             n_ctx_value = configure.get("n_io_context", 10)
             zpipe_instance = zpipe_create_pipe(io_threads=n_ctx_value)
 
-            app = QApplication(sys.argv)
-            font_id = QFontDatabase.addApplicationFont((ROOT_PATH / configure['font_path']).as_posix())
-            font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
-            app.setFont(QFont(font_family, 12))
-            main_window = ControlWindow(config=configure, zpipe=zpipe_instance)
-            main_window.show()
-
-            exit_cdoe = app.exec()
+            # viewer (using open3d)
+            viewer = Open3DVisualizer(config=configure, zpipe=zpipe_instance)
+            viewer.run(30)
 
             # terminate pipeline
             zpipe_destroy_pipe()
             console.info(f"Successfully terminated")
-            sys.exit(exit_cdoe)
 
     except json.JSONDecodeError as e:
         console.critical(f"Configuration File Parse Exception : {e}")
     except Exception as e:
         console.critical(f"General Exception : {e}")
-        
-    
-        
-    

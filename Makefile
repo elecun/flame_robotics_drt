@@ -4,13 +4,12 @@ PYTHON := $(VENV_DIR)/bin/python3
 monitor:
 	$(PYTHON) ./monitor.py --config ./drt.cfg
 
-viewer3d:
-	$(PYTHON) ./python/viewer3d.py --config $(CURDIR)/python/viewer3d.cfg
+viewer:
+	$(PYTHON) ./python/viewer.py --config $(CURDIR)/python/viewer.cfg
 
 controller:
 	$(PYTHON) ./python/controller.py --config $(CURDIR)/python/controller.cfg
 
-
 run:
-	$(PYTHON) ./python/viewer3d.py --config $(CURDIR)/python/viewer3d.cfg &
-	$(PYTHON) ./python/controller.py --config $(CURDIR)/python/controller.cfg
+	$(PYTHON) ./python/viewer.py --config $(CURDIR)/python/viewer.cfg &
+	$(PYTHON) ./python/simtool.py --config $(CURDIR)/python/simtool.cfg 
