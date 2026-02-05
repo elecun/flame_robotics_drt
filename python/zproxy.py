@@ -1,5 +1,5 @@
 '''
-DRT 3D Control Tools
+ZPipe Proxy Application
 @auhtor Byunghun Hwang<bh.hwnag@iae.re.kr>
 '''
 
@@ -11,60 +11,51 @@ try:
 except ImportError:
     print("PyQt6 is required to run this application.")
 
-import sys, os
-import pathlib
+import sys
+import os
 import json
-import atexit
-from common.zpipe import zpipe_create_pipe, zpipe_destroy_pipe
-from common.zpipe import ZPipe
+import time
+import argparse
+import pathlib
 
-# root directory registration on system environment
+from common.zpipe import ZPipe, AsyncZSocket, zpipe_create_pipe, zpipe_destroy_pipe
+from util.logger.console import ConsoleLogger
+from common import zapi
+from zproxy.window import AppWindow
+
 ROOT_PATH = pathlib.Path(__file__).parent.parent
 APP_NAME = pathlib.Path(__file__).stem
 sys.path.append(ROOT_PATH.as_posix())
 
-import argparse
-import multiprocessing
-import zmq
-from multiprocessing import Process
-from simtool.window import AppWindow as ToolWindow
-from util.logger.console import ConsoleLogger
-
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', nargs='?', required=False, help="Configuration File(*.cfg)", default="simtool.cfg")
+    parser.add_argument("--config", default="python/zproxy.cfg", help="Path to config file")
     parser.add_argument('--verbose_level', nargs='?', required=False, help="Set Verbose Level", default="DEBUG")
     args = parser.parse_args()
 
     console = ConsoleLogger.get_logger(level="DEBUG")
 
-    app = None
     try:
         with open(args.config, "r") as cfile:
             configure = json.load(cfile)
 
+            # add path
             configure["root_path"] = ROOT_PATH
             configure["app_path"] = (pathlib.Path(__file__).parent / APP_NAME)
             configure["verbose_level"] = args.verbose_level.upper()
 
-            if configure["verbose_level"] == "DEBUG":
-                console.debug(f"Root Path : {configure['root_path']}")
-                console.debug(f"Application Path : {configure['app_path']}")
-                console.debug(f"Verbose Level : {configure['verbose_level']}")
-
-            # zmq pipeline
             # create zpipe context
             n_ctx_value = configure.get("n_io_context", 10)
             zpipe_instance = zpipe_create_pipe(io_threads=n_ctx_value)
 
+            # run app
             app = QApplication(sys.argv)
             font_id = QFontDatabase.addApplicationFont((ROOT_PATH / configure['font_path']).as_posix())
             font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
             app.setFont(QFont(font_family, 12))
-            main_window = ToolWindow(config=configure, zpipe=zpipe_instance)
-            main_window.show()
+            appwindow = AppWindow(config=configure, zpipe=zpipe_instance)
+            appwindow.show()
 
             exit_cdoe = app.exec()
 
@@ -77,7 +68,4 @@ if __name__ == "__main__":
         console.critical(f"Configuration File Parse Exception : {e}")
     except Exception as e:
         console.critical(f"General Exception : {e}")
-        
-    
-        
-    
+

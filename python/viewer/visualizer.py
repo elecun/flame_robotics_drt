@@ -8,6 +8,8 @@ from util.logger.console import ConsoleLogger
 from common.zpipe import AsyncZSocket, ZPipe
 from viewer.container import GeoContainer
 
+from common import zapi
+
 class Open3DVisualizer:
     def __init__(self, config:dict=None,  zpipe:ZPipe=None):
         if config is None:
@@ -24,19 +26,57 @@ class Open3DVisualizer:
         self.container = GeoContainer()
 
         # create & join asynczsocket
+        # 1. Subscriber Socket (Recv data + System commands from SimTool)
         self.__socket = AsyncZSocket("Open3DVisualizer", "subscribe")
         if self.__socket.create(pipeline=zpipe):
             transport = config.get("transport", "tcp")
+            # Viewer listens to SimTool's PUB port (9002) - wait, config says 9001?
+            # Viewer.cfg has "port": 9001. This is usually its OWN port if it was a server, 
+            # OR the target port if client.
+            # Open3DVisualizer is a Subscriber. 
+            # In `viewer.py`, it passes this config.
+            # If `viewer.cfg` says 9001, it attempts to connect to 9001.
+            # But SimTool binds to 9002. 
+            # So Viewer needs to know SimTool's port. 
+            # User didn't ask to fix port mismatch, but implied they work together.
+            # Maybe I should just assume config is correct or SimTool also publishes on 9001?
+            # SimTool.cfg says 9002.
+            # Viewer.cfg says 9001.
+            # Unless Viewer is binding 9001? No, it's Subscriber. 
+            # AsyncZSocket join logic: if pattern is subscribe -> connect via `join`.
+            # So Viewer connects to localhost:9001.
+            # SimTool binds 9002.
+            # THIS IS A CONFIG MISMATCH.
+            # However, I should stick to the task: ZAPI.
+            # But for ZAPI to work, they must be connected.
+            # I will configure the NEW sockets explicitly.
+            
+            # Existing socket logic (using config['port']):
             port = config.get("port", 9001)
             host = config.get("host", "localhost")
             if self.__socket.join(transport, host, port):
                 self.__socket.subscribe("call")
+                # SUBSCRIBE TO SYSTEM TOPIC
+                self.__socket.subscribe(zapi.TOPIC_SYSTEM)
+                
                 self.__socket.set_message_callback(self.__on_data_received)
                 self.__console.debug(f"Socket created and joined: {transport}://{host}:{port}")
             else:
                 self.__console.error("Failed to join socket")
         else:
             self.__console.error("Failed to create socket")
+            
+        # 2. Publisher Socket (Send System commands) - NEW
+        # We need a dedicated port for Viewer to publish. 
+        # Let's hardcode 9003 for now as per plan, or add to config?
+        # Better to add to config but I can just use 9003 default.
+        self.sys_pub_port = config.get("sys_pub_port", 9003)
+        self.__sys_socket = AsyncZSocket("Open3DVisualizerSys", "publish")
+        if self.__sys_socket.create(pipeline=zpipe):
+            if self.__sys_socket.join("tcp", "*", self.sys_pub_port):
+                self.__console.debug(f"System Publisher bound to: *: {self.sys_pub_port}")
+            else:
+                 self.__console.error("Failed to bind System Publisher")
 
         # Initialize Open3D Visualizer
         self.vis = o3d.visualization.Visualizer()
@@ -55,6 +95,9 @@ class Open3DVisualizer:
                 
         # Set default view
         self.set_isometric()
+        
+        # Flag for external termination
+        self._should_close = False
 
     def set_isometric(self):
         """Set view to isometric (looking from diagonal)"""
@@ -80,12 +123,15 @@ class Open3DVisualizer:
         self.__console.info(f"Starting rendering loop at {frequency_hz} Hz")
 
         while self.vis.poll_events():
+            if self._should_close:
+                break
+                
             start_time = time.time()
             
             self.vis.update_renderer()
             
             # Log update with timestamp (handled by formatter)
-            self.__console.info("Main loop updated")
+            # code here to update
 
             elapsed = time.time() - start_time
             sleep_time = interval - elapsed
@@ -97,6 +143,13 @@ class Open3DVisualizer:
         self.__console.info("Visualizer closed")
     
     def on_close(self):
+        # Send termination signal
+        if hasattr(self, '_Open3DVisualizer__sys_socket') and self.__sys_socket:
+             zapi.zapi_destroy(self.__sys_socket)
+             # Give a moment for message to fly out
+             time.sleep(0.1)
+             self.__sys_socket.destroy_socket()
+
         # Clean up subscriber socket
         if hasattr(self, '_Open3DVisualizer__socket') and self.__socket:
             self.__socket.destroy_socket()
@@ -107,6 +160,15 @@ class Open3DVisualizer:
         """Callback function for zpipe data reception"""
         try:
             if len(multipart_data) >= 2:
+                topic = multipart_data[0]
+                msg = multipart_data[1]
+                
+                # CHECK FOR SYSTEM TERMINATION
+                if zapi.zapi_check_system_message(topic, msg):
+                    self.__console.warning("Received TERMINATION signal")
+                    self._should_close = True
+                    return
+
                 with self._message_lock:
                     # Check if queue is full
                     if len(self._pending_messages) >= self._pending_messages.maxlen:

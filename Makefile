@@ -10,6 +10,13 @@ viewer:
 controller:
 	$(PYTHON) ./python/controller.py --config $(CURDIR)/python/controller.cfg
 
+zproxy:
+	$(PYTHON) ./python/zproxy.py --config $(CURDIR)/python/zproxy.cfg
+
+simtool:
+	$(PYTHON) ./python/simtool.py --config $(CURDIR)/python/simtool.cfg
+
 run:
+	$(PYTHON) ./python/zproxy.py --config $(CURDIR)/python/zproxy.cfg &
 	$(PYTHON) ./python/viewer.py --config $(CURDIR)/python/viewer.cfg &
 	$(PYTHON) ./python/simtool.py --config $(CURDIR)/python/simtool.cfg 

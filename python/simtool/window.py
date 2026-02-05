@@ -24,6 +24,7 @@ import math
 import importlib
 import inspect
 import pkgutil
+from common import zapi
 from functools import partial
 
 from common.zpipe import AsyncZSocket, ZPipe
@@ -52,18 +53,34 @@ class AppWindow(QMainWindow):
                     self.load_plugins()
 
                     # Create socket for communication (as server)
-                    self.__socket = AsyncZSocket("Controller", "publish")
+                    self.__socket = AsyncZSocket("SimTool", "publish")
                     if self.__socket.create(pipeline=zpipe):
                         transport = config.get("transport", "tcp")
-                        port = config.get("port", 9001)
-                        host = config.get("host", "localhost")
+                        port = config.get("port", 9002) # SimTool binds 9002
+                        host = config.get("host", "*")  # Binds to all
                         if self.__socket.join(transport, host, port):
-                            self.__socket.set_message_callback(self.__on_data_received)
+                            self.__socket.set_message_callback(self.__on_data_received) # PUB usually doesn't recv but fine
                             self.__console.debug(f"Socket created : {transport}://{host}:{port}")
                         else:
                             self.__console.error("Failed to join AsyncZsocket")
                     else:
                         self.__console.error("Failed to create AsyncZsocket")
+                        
+                    # Create System Subscriber socket (Listen to Viewer on 9003)
+                    self.__sys_sub = AsyncZSocket("SimToolSysSub", "subscribe")
+                    if self.__sys_sub.create(pipeline=zpipe):
+                        # Connect to Viewer
+                        # Viewer binds 9003 on *
+                        # We connect to localhost:9003 (assuming local)
+                        sys_port = 9003
+                        if self.__sys_sub.join("tcp", "localhost", sys_port):
+                            self.__sys_sub.subscribe(zapi.TOPIC_SYSTEM)
+                            # We use the SAME callback or a new one?
+                            # Use same for simplicity, handle in __on_data_received
+                            self.__sys_sub.set_message_callback(self.__on_data_received)
+                            self.__console.debug(f"Connected to System Bus on port {sys_port}")
+                        else:
+                             self.__console.error("Failed to connect to System Bus")
 
                 else:
                     raise Exception(f"Cannot found UI file : {ui_path}")
@@ -133,6 +150,13 @@ class AppWindow(QMainWindow):
             if len(multipart_data) >= 2:
                 topic = multipart_data[0]
                 msg = multipart_data[1]
+                
+                # Check for Termination Signal
+                if zapi.zapi_check_system_message(topic, msg):
+                     self.__console.warning("Received TERMINATION signal - Exiting...")
+                     QApplication.quit() # This will close windows and trigger cleanup
+                     return
+                     
                 self.__call(topic, msg)
         except Exception as e:
             self.__console.error(f"({self.__class__.__name__}) Error processing received data: {e}")
@@ -140,15 +164,24 @@ class AppWindow(QMainWindow):
     def closeEvent(self, event:QCloseEvent) -> None:
         """ Handle close event """
         try:
+            # Broadcast termination
+            if hasattr(self, '_AppWindow__socket') and self.__socket:
+                zapi.zapi_destroy(self.__socket)
+                # Give time for msg to be sent
+                # zmq might handle it asynchronously, but a small process sleep helps ensure network flush
+                import time
+                time.sleep(0.1)
 
             # Clean up subscriber socket first
             if hasattr(self, '_AppWindow__socket') and self.__socket:
                 self.__socket.destroy_socket()
                 self.__console.debug(f"({self.__class__.__name__}) Destroyed socket")
+            
+            if hasattr(self, '_AppWindow__sys_sub') and self.__sys_sub:
+                self.__sys_sub.destroy_socket()
 
         except Exception as e:
             self.__console.error(f"Error during window close: {e}")
         finally:
             self.__console.info("Successfully Closed")
-            return super().closeEvent(event)
-    
+            super().closeEvent(event)
