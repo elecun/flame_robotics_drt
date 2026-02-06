@@ -5,20 +5,24 @@ class GeoContainer:
     def __init__(self):
         self._geometries: Dict[str, dict] = {}
         
+        # device selection (Priority: CUDA > CPU)
+        self.device = o3d.core.Device("cuda:0") if o3d.core.cuda.is_available() else o3d.core.Device("cpu:0")
+        print(f"GeoContainer using device: {self.device}")
+
         # Add default origin coordinate
-        origin = o3d.geometry.TriangleMesh.create_coordinate_frame(size=500.0, origin=[0, 0, 0])
+        # Create legacy and convert to tensor (as simplistic creation might not be available in tensor API for coords yet)
+        origin_legacy = o3d.geometry.TriangleMesh.create_coordinate_frame(size=500.0, origin=[0, 0, 0])
+        origin = o3d.t.geometry.TriangleMesh.from_legacy(origin_legacy, device=self.device)
         self.add_geometry("origin_coordinate", origin)
 
         # Add default ground plane
         # 10000 x 10000 size, thin box
-        ground = o3d.geometry.TriangleMesh.create_box(width=10000.0, height=10000.0, depth=0.1)
-        # Center the ground at origin (x, y) and put it slightly below z=0
-        ground.translate([-5000.0, -5000.0, -0.1])
-        ground.paint_uniform_color([0.5, 0.5, 0.5]) # Gray color
+        ground_legacy = o3d.geometry.TriangleMesh.create_box(width=10000.0, height=10000.0, depth=0.1)
+        ground_legacy.translate([-5000.0, -5000.0, -0.1])
+        ground_legacy.paint_uniform_color([0.5, 0.5, 0.5]) # Gray color
+        ground_legacy.compute_vertex_normals()
         
-        # Calculate normals for proper shading
-        ground.compute_vertex_normals()
-        
+        ground = o3d.t.geometry.TriangleMesh.from_legacy(ground_legacy, device=self.device)
         self.add_geometry("ground", ground)
 
     def add_geometry(self, name: str, geometry, visibility: bool = True):
@@ -27,9 +31,14 @@ class GeoContainer:
         
         Args:
             name (str): Unique name of the geometry
-            geometry: The Open3D geometry object
+            geometry: The Open3D geometry object (Tensor or Legacy)
             visibility (bool): Initial visibility state
         """
+        # Ensure geometry is on the correct device if it's a tensor geometry
+        if isinstance(geometry, o3d.t.geometry.Geometry):
+             if geometry.device != self.device:
+                 geometry = geometry.to(self.device)
+        
         self._geometries[name] = {
             "geometry": geometry,
             "visible": visibility
@@ -47,3 +56,4 @@ class GeoContainer:
         """Remove a geometry by name"""
         if name in self._geometries:
             del self._geometries[name]
+

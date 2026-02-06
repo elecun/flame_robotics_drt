@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
             # viewer (using open3d)
             viewer = Open3DVisualizer(config=configure, zpipe=zpipe_instance)
-            viewer.run(30)
+            viewer.run(60)
 
             # terminate pipeline
             zpipe_destroy_pipe()

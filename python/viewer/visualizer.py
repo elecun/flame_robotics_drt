@@ -10,6 +10,9 @@ from viewer.container import GeoContainer
 
 from common import zapi
 
+import open3d.visualization.gui as gui
+import open3d.visualization.rendering as rendering
+
 class Open3DVisualizer:
     def __init__(self, config:dict=None,  zpipe:ZPipe=None):
         if config is None:
@@ -30,28 +33,7 @@ class Open3DVisualizer:
         self.__socket = AsyncZSocket("Open3DVisualizer", "subscribe")
         if self.__socket.create(pipeline=zpipe):
             transport = config.get("transport", "tcp")
-            # Viewer listens to SimTool's PUB port (9002) - wait, config says 9001?
-            # Viewer.cfg has "port": 9001. This is usually its OWN port if it was a server, 
-            # OR the target port if client.
-            # Open3DVisualizer is a Subscriber. 
-            # In `viewer.py`, it passes this config.
-            # If `viewer.cfg` says 9001, it attempts to connect to 9001.
-            # But SimTool binds to 9002. 
-            # So Viewer needs to know SimTool's port. 
-            # User didn't ask to fix port mismatch, but implied they work together.
-            # Maybe I should just assume config is correct or SimTool also publishes on 9001?
-            # SimTool.cfg says 9002.
-            # Viewer.cfg says 9001.
-            # Unless Viewer is binding 9001? No, it's Subscriber. 
-            # AsyncZSocket join logic: if pattern is subscribe -> connect via `join`.
-            # So Viewer connects to localhost:9001.
-            # SimTool binds 9002.
-            # THIS IS A CONFIG MISMATCH.
-            # However, I should stick to the task: ZAPI.
-            # But for ZAPI to work, they must be connected.
-            # I will configure the NEW sockets explicitly.
             
-            # Existing socket logic (using config['port']):
             port = config.get("port", 9001)
             host = config.get("host", "localhost")
             if self.__socket.join(transport, host, port):
@@ -66,10 +48,7 @@ class Open3DVisualizer:
         else:
             self.__console.error("Failed to create socket")
             
-        # 2. Publisher Socket (Send System commands) - NEW
-        # We need a dedicated port for Viewer to publish. 
-        # Let's hardcode 9003 for now as per plan, or add to config?
-        # Better to add to config but I can just use 9003 default.
+        # 2. Publisher Socket (Send System commands)
         self.sys_pub_port = config.get("sys_pub_port", 9003)
         self.__sys_socket = AsyncZSocket("Open3DVisualizerSys", "publish")
         if self.__sys_socket.create(pipeline=zpipe):
@@ -78,20 +57,29 @@ class Open3DVisualizer:
             else:
                  self.__console.error("Failed to bind System Publisher")
 
-        # Initialize Open3D Visualizer
-        self.vis = o3d.visualization.Visualizer()
-        
-        window_title = config.get('window_title', 'Open3D')
+        # Initialize Open3D GUI
+        self.app = gui.Application.instance
+        self.app.initialize()
+
+        window_title = config.get('window_title', 'Open3D (Optimized)')
         window_size = config.get('window_size', [1920, 1080])
-        width = window_size[0]
-        height = window_size[1]
+        self.window = self.app.create_window(window_title, window_size[0], window_size[1])
         
-        self.vis.create_window(window_name=window_title, width=width, height=height)
-        
+        # Create SceneWidget
+        self.widget3d = gui.SceneWidget()
+        self.widget3d.scene = rendering.Open3DScene(self.window.renderer)
+        self.window.add_child(self.widget3d)
+
+        # Basic material
+        mat = rendering.MaterialRecord()
+        mat.shader = "defaultLit"
+
         # Add geometries from container
         for name, data in self.container.get_geometries().items():
             if data["visible"]:
-                self.vis.add_geometry(data["geometry"])
+                # user rendering.Open3DScene.add_geometry
+                # Note: add_geometry(name, geometry, material)
+                self.widget3d.scene.add_geometry(name, data["geometry"], mat)
                 
         # Set default view
         self.set_isometric()
@@ -99,49 +87,123 @@ class Open3DVisualizer:
         # Flag for external termination
         self._should_close = False
 
+        # Set tick callback for rendering loop logic (ZMQ polling etc)
+        self.window.set_on_tick_event(self._on_tick)
+        
+        self.loop_count = 0
+        self.last_log_time = time.time()
+        self.target_frequency_hz = 60
+
     def set_isometric(self):
-        """Set view to isometric (looking from diagonal)"""
-        ctr = self.vis.get_view_control()
-        # Set camera to look from a diagonal direction
-        ctr.set_front([-1.0, -1.0, 1.0])
-        ctr.set_lookat([0.0, 0.0, 0.0])
-        ctr.set_up([0.0, 0.0, 1.0])
-        ctr.set_zoom(0.8)
-        self.__console.debug("View set to Isometric")
+        """Set view to isometric (Orthographic)"""
+        center = [0, 0, 0]
+        # Position camera at a diagonal
+        eye = [-500, -500, 500] 
+        up = [0, 0, 1]
+        
+        # 1. Set Look At/Camera Position
+        self.widget3d.look_at(center, eye, up)
+        
+        # 2. Set Orthographic Projection
+        # Define view volume (left, right, bottom, top, near, far)
+        # Assuming scene scale around 2000 units visible
+        view_width = 2000.0
+        view_height = 2000.0
+        near_plane = 0.1
+        far_plane = 20000.0 # Make sure to cover the large ground
+        
+        camera = self.widget3d.scene.camera
+        camera.set_projection(rendering.Camera.Projection.Ortho, 
+                              -view_width/2, view_width/2, 
+                              -view_height/2, view_height/2, 
+                              near_plane, far_plane)
+                              
+        self.__console.debug("View set to Isometric (Orthogonal)")
 
     def set_perspective(self):
-        """Set view to perspective (standard front view)"""
-        ctr = self.vis.get_view_control()
-        ctr.set_front([-1.0, -0.5, 0.5])
-        ctr.set_lookat([0.0, 0.0, 0.0])
-        ctr.set_up([0.0, 0.0, 1.0])
-        ctr.set_zoom(0.8)
+        """Set view to perspective"""
+        center = [0, 0, 0]
+        eye = [-500, -500, 500] 
+        up = [0, 0, 1]
+        self.widget3d.look_at(center, eye, up)
+        
+        field_of_view = 60.0
+        aspect_ratio = 16.0/9.0 
+        near_plane = 0.1
+        far_plane = 20000.0
+        
+        camera = self.widget3d.scene.camera
+        camera.set_projection(rendering.Camera.Projection.Perspective,
+                              field_of_view, aspect_ratio, near_plane, far_plane)
+        
         self.__console.debug("View set to Perspective")
 
     def run(self, frequency_hz: int):
-        interval = 1.0 / frequency_hz
-        self.__console.info(f"Starting rendering loop at {frequency_hz} Hz")
-
-        while self.vis.poll_events():
-            if self._should_close:
-                break
-                
-            start_time = time.time()
-            
-            self.vis.update_renderer()
-            
-            # Log update with timestamp (handled by formatter)
-            # code here to update
-
-            elapsed = time.time() - start_time
-            sleep_time = interval - elapsed
-            if sleep_time > 0:
-                time.sleep(sleep_time)
-
-        self.vis.destroy_window()
+        self.target_frequency_hz = frequency_hz
+        self.__console.info(f"Starting GUI loop (target: {frequency_hz} Hz)")
+        
+        # Blocking call
+        self.app.run()
+        
         self.on_close()
         self.__console.info("Visualizer closed")
     
+    def _on_tick(self) -> bool:
+        """Called every frame by the GUI event loop."""
+        if self._should_close:
+            self.app.quit()
+            return False
+
+        # 1. Log Frequency
+        self.loop_count, self.last_log_time = self._log_rendering_frequency(self.loop_count, self.last_log_time)
+        
+        # 2. Poll ZMQ Messages
+        processed_count = 0
+        while True:
+            try:
+                with self._message_lock:
+                    if not self._pending_messages:
+                        break
+                    multipart_data = self._pending_messages.popleft()
+                
+                self._process_data(multipart_data)
+                processed_count += 1
+                if processed_count > 10: 
+                    break
+            except Exception as e:
+                self.__console.error(f"Error processing message: {e}")
+                break
+        
+        # Trigger redraw if needed
+        if processed_count > 0:
+             self.window.post_redraw()
+
+        return True
+
+    def _process_data(self, multipart_data):
+         # Implement data processing to update geometries
+         # For now, just a placeholder or move logic from original code if any.
+         # The original code `__on_data_received` just put it in queue. 
+         # We need to actually apply it to the scene.
+         pass
+
+    def _log_rendering_frequency(self, loop_count, last_log_time):
+        """
+        Calculate and log the rendering frequency every 10 loops.
+        """
+        loop_count += 1
+        if loop_count >= 10:
+            current_time = time.time()
+            duration = current_time - last_log_time
+            if duration > 0:
+                frequency = 10.0 / duration
+                self.__console.debug(f"Actual Rendering Frequency: {frequency:.2f} Hz")
+            
+            last_log_time = current_time
+            loop_count = 0
+            
+        return loop_count, last_log_time
+
     def on_close(self):
         # Send termination signal
         if hasattr(self, '_Open3DVisualizer__sys_socket') and self.__sys_socket:
@@ -167,6 +229,8 @@ class Open3DVisualizer:
                 if zapi.zapi_check_system_message(topic, msg):
                     self.__console.warning("Received TERMINATION signal")
                     self._should_close = True
+                    # Need to trigger quit from main thread
+                    gui.Application.instance.post_to_main_thread(self.window, lambda: self.app.quit())
                     return
 
                 with self._message_lock:
