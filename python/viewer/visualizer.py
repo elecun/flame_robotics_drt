@@ -3,15 +3,15 @@ from collections import deque
 import open3d as o3d
 import time
 import datetime
-import colorlog
 from util.logger.console import ConsoleLogger
 from common.zpipe import AsyncZSocket, ZPipe
-from viewer.container import GeoContainer
+from viewer.container import GeometryContainer
 
 from common import zapi
 
 import open3d.visualization.gui as gui
 import open3d.visualization.rendering as rendering
+from common.graphic_device import GraphicDevice
 
 class Open3DVisualizer:
     def __init__(self, config:dict=None,  zpipe:ZPipe=None):
@@ -25,22 +25,23 @@ class Open3DVisualizer:
         self._pending_messages = deque(maxlen=100)
         self._message_stats = {'received': 0, 'dropped': 0}
 
-        # Initialize GeoContainer
-        self.container = GeoContainer()
+        # Initialize GeometryContainer
+        self.container = GeometryContainer()
+
+        # Device Detection
+        self.gdevice = GraphicDevice()
+        self.__console.info(f"Graphic Device: Running on {self.gdevice.get_device_name()}")
 
         # create & join asynczsocket
         # 1. Subscriber Socket (Recv data + System commands from SimTool)
         self.__socket = AsyncZSocket("Open3DVisualizer", "subscribe")
         if self.__socket.create(pipeline=zpipe):
             transport = config.get("transport", "tcp")
-            
             port = config.get("port", 9001)
             host = config.get("host", "localhost")
             if self.__socket.join(transport, host, port):
                 self.__socket.subscribe("call")
-                # SUBSCRIBE TO SYSTEM TOPIC
                 self.__socket.subscribe(zapi.TOPIC_SYSTEM)
-                
                 self.__socket.set_message_callback(self.__on_data_received)
                 self.__console.debug(f"Socket created and joined: {transport}://{host}:{port}")
             else:
@@ -61,28 +62,43 @@ class Open3DVisualizer:
         self.app = gui.Application.instance
         self.app.initialize()
 
-        window_title = config.get('window_title', 'Open3D (Optimized)')
+        window_title = config.get('window_title', f'Open3D (Optimized - {self.gdevice.get_device_name()})')
         window_size = config.get('window_size', [1920, 1080])
         self.window = self.app.create_window(window_title, window_size[0], window_size[1])
         
         # Create SceneWidget
         self.widget3d = gui.SceneWidget()
         self.widget3d.scene = rendering.Open3DScene(self.window.renderer)
+        
+        # Background Color
+        bg_color = config.get('background-color', [1.0, 1.0, 1.0, 1.0])
+        self.widget3d.scene.set_background(bg_color)
+        
+        # Lighting
+        self.widget3d.scene.set_lighting(rendering.Open3DScene.LightingProfile.MED_SHADOWS, (0.577, -0.577, -0.577))
+        
         self.window.add_child(self.widget3d)
 
         # Basic material
         mat = rendering.MaterialRecord()
         mat.shader = "defaultLit"
+        
+        # Unlit material for coordinates
+        mat_unlit = rendering.MaterialRecord()
+        mat_unlit.shader = "defaultUnlit"
 
         # Add geometries from container
         for name, data in self.container.get_geometries().items():
             if data["visible"]:
                 # user rendering.Open3DScene.add_geometry
                 # Note: add_geometry(name, geometry, material)
-                self.widget3d.scene.add_geometry(name, data["geometry"], mat)
+                if "coordinate" in name:
+                    self.widget3d.scene.add_geometry(name, data["geometry"], mat_unlit)
+                else:
+                    self.widget3d.scene.add_geometry(name, data["geometry"], mat)
                 
         # Set default view
-        self.set_isometric()
+        self.set_perspective()
         
         # Flag for external termination
         self._should_close = False
@@ -97,20 +113,23 @@ class Open3DVisualizer:
     def set_isometric(self):
         """Set view to isometric (Orthographic)"""
         center = [0, 0, 0]
-        # Position camera at a diagonal
-        eye = [-500, -500, 500] 
+        # Position camera at a diagonal 
         up = [0, 0, 1]
         
         # 1. Set Look At/Camera Position
+        # Move camera back significantly to ensure the 10000x10000 plane is in front of the camera plane
+        eye = [5, 5, 5] 
+        up = [0, 0, 1]
+        
         self.widget3d.look_at(center, eye, up)
         
         # 2. Set Orthographic Projection
         # Define view volume (left, right, bottom, top, near, far)
-        # Assuming scene scale around 2000 units visible
-        view_width = 2000.0
-        view_height = 2000.0
+        # Plane is 10000, so we need >10000. Using 15000 for margin.
+        view_width = 15.0
+        view_height = 15.0
         near_plane = 0.1
-        far_plane = 20000.0 # Make sure to cover the large ground
+        far_plane = 50000.0 # Increased to cover the new distance from eye
         
         camera = self.widget3d.scene.camera
         camera.set_projection(rendering.Camera.Projection.Ortho, 
@@ -123,18 +142,18 @@ class Open3DVisualizer:
     def set_perspective(self):
         """Set view to perspective"""
         center = [0, 0, 0]
-        eye = [-500, -500, 500] 
+        eye = [5, 5, 5] 
         up = [0, 0, 1]
         self.widget3d.look_at(center, eye, up)
         
         field_of_view = 60.0
         aspect_ratio = 16.0/9.0 
         near_plane = 0.1
-        far_plane = 20000.0
+        far_plane = 1000.0
         
         camera = self.widget3d.scene.camera
-        camera.set_projection(rendering.Camera.Projection.Perspective,
-                              field_of_view, aspect_ratio, near_plane, far_plane)
+        camera.set_projection(field_of_view, aspect_ratio, near_plane, far_plane, 
+                              rendering.Camera.FovType.Vertical)
         
         self.__console.debug("View set to Perspective")
 
@@ -197,7 +216,6 @@ class Open3DVisualizer:
             duration = current_time - last_log_time
             if duration > 0:
                 frequency = 10.0 / duration
-                self.__console.debug(f"Actual Rendering Frequency: {frequency:.2f} Hz")
             
             last_log_time = current_time
             loop_count = 0

@@ -1,24 +1,24 @@
 import open3d as o3d
 from typing import Dict, Optional
 
-class GeoContainer:
+class GeometryContainer:
     def __init__(self):
         self._geometries: Dict[str, dict] = {}
         
         # device selection (Priority: CUDA > CPU)
         self.device = o3d.core.Device("cuda:0") if o3d.core.cuda.is_available() else o3d.core.Device("cpu:0")
-        print(f"GeoContainer using device: {self.device}")
+        print(f"GeometryContainer using device: {self.device}")
 
         # Add default origin coordinate
         # Create legacy and convert to tensor (as simplistic creation might not be available in tensor API for coords yet)
-        origin_legacy = o3d.geometry.TriangleMesh.create_coordinate_frame(size=500.0, origin=[0, 0, 0])
+        origin_legacy = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1, origin=[0, 0, 0])
         origin = o3d.t.geometry.TriangleMesh.from_legacy(origin_legacy, device=self.device)
         self.add_geometry("origin_coordinate", origin)
 
         # Add default ground plane
-        # 10000 x 10000 size, thin box
-        ground_legacy = o3d.geometry.TriangleMesh.create_box(width=10000.0, height=10000.0, depth=0.1)
-        ground_legacy.translate([-5000.0, -5000.0, -0.1])
+        # 3.0 x 8.0 size, height 0.01 (10mm)
+        ground_legacy = o3d.geometry.TriangleMesh.create_box(width=3.0, height=8.0, depth=0.01)
+        ground_legacy.translate([-1.5, -4.0, -0.011]) # Top surface at -0.001 to avoid z-fighting
         ground_legacy.paint_uniform_color([0.5, 0.5, 0.5]) # Gray color
         ground_legacy.compute_vertex_normals()
         
