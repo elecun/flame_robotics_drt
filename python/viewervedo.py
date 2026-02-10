@@ -1,5 +1,5 @@
 """
-DRT Viewer 3D Application
+DRT 3D Viewer 3D App with Vedo(https://vedo.embl.es/)
 @author Byunghun Hwang <bh.hwang@iae.re.kr>
 """
 
@@ -11,7 +11,7 @@ import zmq
 import argparse
 
 from util.logger.console import ConsoleLogger
-from viewer.visualizer import Open3DVisualizer
+from viewervedo.visualizer import VedoVisualizer
 from common.zpipe import zpipe_create_pipe, zpipe_destroy_pipe
 from common.zpipe import ZPipe
 
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     console = ConsoleLogger.get_logger(level="DEBUG")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', nargs='?', required=False, help="Configuration File(*.cfg)", default="viewer.cfg")
+    parser.add_argument('--config', nargs='?', required=False, help="Configuration File(*.cfg)", default="viewervedo.cfg")
     parser.add_argument('--verbose_level', nargs='?', required=False, help="Set Verbose Level", default="DEBUG")
     args = parser.parse_args()
 
@@ -47,8 +47,8 @@ if __name__ == "__main__":
             n_ctx_value = configure.get("n_io_context", 10)
             zpipe_instance = zpipe_create_pipe(io_threads=n_ctx_value)
 
-            # viewer (using open3d)
-            viewer = Open3DVisualizer(config=configure, zpipe=zpipe_instance)
+            # viewer (using vedo)
+            viewer = VedoVisualizer(config=configure, zpipe=zpipe_instance)
             viewer.run(60)
 
             # terminate pipeline

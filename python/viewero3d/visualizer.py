@@ -5,7 +5,7 @@ import time
 import datetime
 from util.logger.console import ConsoleLogger
 from common.zpipe import AsyncZSocket, ZPipe
-from viewer.container import GeometryContainer
+from viewero3d.container import GeometryContainer
 
 from common import zapi
 

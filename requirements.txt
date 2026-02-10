@@ -4,3 +4,4 @@ scipy
 pyzmq
 colorlog
 open3d
+vedo
