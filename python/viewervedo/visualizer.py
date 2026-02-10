@@ -3,6 +3,7 @@
 @note
 - Vedo is a Python library for 3D visualization based on VTK (Visualization Toolkit).
 - VedoVisualizer is a class that renders 3D geometries
+- All ZMQ communication is handled by VedoZApi (viewervedo/zapi.py)
 """
 
 import threading
@@ -11,74 +12,44 @@ import time
 import numpy as np
 import vedo
 from util.logger.console import ConsoleLogger
-from common.zpipe import AsyncZSocket, ZPipe
-
-from common import zapi
 from common.graphic_device import GraphicDevice
+from viewervedo.robot import load_robots_from_config
+
 
 class VedoVisualizer:
-    def __init__(self, config:dict=None, zpipe:ZPipe=None):
+    def __init__(self, config:dict=None):
         if config is None:
             config = {}
     
         self.__console = ConsoleLogger.get_logger()
-        
-        # Initialize message queue and stats
-        self._message_lock = threading.Lock()
-        self._pending_messages = deque(maxlen=100)
-        self._message_stats = {'received': 0, 'dropped': 0}
+
+        # Thread-safe request queue (populated by VedoZApi)
+        self._request_queue = deque(maxlen=100)
+        self._queue_lock = threading.Lock()
 
         # Device Detection (Reusing GraphicDevice from common)
         self.gdevice = GraphicDevice()
         self.__console.info(f"Graphic Device: Running on {self.gdevice.get_device_name()}")
         
         # GPU Acceleration check for Vedo (VTK)
-        # Vedo uses VTK which can use GPU. We can check if we want to enforce any specific settings.
-        # For this prototype, we rely on VTK's default behavior but log the preference.
         if "cuda" in self.gdevice.get_device_name().lower() or "mps" in self.gdevice.get_device_name().lower():
              self.__console.info("GPU Acceleration enabled for Vedo/VTK (if available via drivers)")
              vedo.settings.use_depth_peeling = True # Better transparency on GPU
         else:
              self.__console.info("Running on CPU mode for Vedo/VTK")
 
-        # create & join asynczsocket
-        # 1. Subscriber Socket (Recv data + System commands from SimTool)
-        self.__socket = AsyncZSocket("VedoVisualizer", "subscribe")
-        if self.__socket.create(pipeline=zpipe):
-            transport = config.get("transport", "tcp")
-            port = config.get("port", 9001)
-            host = config.get("host", "localhost")
-            if self.__socket.join(transport, host, port):
-                self.__socket.subscribe("call")
-                self.__socket.subscribe(zapi.TOPIC_SYSTEM)
-                self.__socket.set_message_callback(self.__on_data_received)
-                self.__console.debug(f"Socket created and joined: {transport}://{host}:{port}")
-            else:
-                self.__console.error("Failed to join socket")
-        else:
-            self.__console.error("Failed to create socket")
-            
-        # 2. Publisher Socket (Send System commands)
-        self.sys_pub_port = config.get("sys_pub_port", 9003)
-        self.__sys_socket = AsyncZSocket("VedoVisualizerSys", "publish")
-        if self.__sys_socket.create(pipeline=zpipe):
-            if self.__sys_socket.join("tcp", "*", self.sys_pub_port):
-                self.__console.debug(f"System Publisher bound to: *: {self.sys_pub_port}")
-            else:
-                 self.__console.error("Failed to bind System Publisher")
-
         # Initialize Vedo Plotter
         window_title = config.get('window_title', f'Vedo Viewer (Optimized - {self.gdevice.get_device_name()})')
         window_size = config.get('window_size', [1920, 1080])
         bg_color = config.get('background_color', [1.0, 1.0, 1.0])
         
-        self.plotter = vedo.Plotter(title=window_title, size=window_size, bg=bg_color, interactive=False) # We will control the loop
+        self.plotter = vedo.Plotter(title=window_title, size=window_size, bg=bg_color, interactive=False)
                 
 
         # Add C-Space Axes/Box if requested
         if config.get("show_axes", False):
              self.c_bounds = config.get("c_space_bound", [5.0, 8.0, 5.0])
-             c_bounds = self.c_bounds # keep local var for below usage
+             c_bounds = self.c_bounds
              self.c_center = [self.c_bounds[0]/2, self.c_bounds[1]/2, self.c_bounds[2]/2]
 
              c_space_box = vedo.Box(pos=(c_bounds[0]/2, c_bounds[1]/2, c_bounds[2]/2), length=c_bounds[0], width=c_bounds[1], height=c_bounds[2])
@@ -94,8 +65,15 @@ class VedoVisualizer:
 
              self.plotter.add(c_space_box, c_space_axes)
 
+        # Load robot models from config
+        if config.get("show_robot", False):
+            robot_actors = load_robots_from_config(config)
+            if robot_actors:
+                self.plotter.add(*robot_actors)
+                self.__console.info(f"Added {len(robot_actors)} robot mesh actors to plotter")
+
         
-        # Flag for external termination
+        # Flag for external termination (set by VedoZApi)
         self._should_close = False
 
         self.loop_count = 0
@@ -121,78 +99,47 @@ class VedoVisualizer:
         if not hasattr(self, 'c_bounds'):
             return
 
-        cx, cy, cz = self.c_center
-        lx, ly, lz = self.c_bounds
-        max_dim = max(lx, ly, lz)
-        dist = max_dim * 2.0 # distance factor
-
+        # Direction vectors for each view (will be normalized internally)
         if key == '1': # XY Plane (Top View)
-            self.plotter.camera.SetPosition(cx, cy, cz + dist)
-            self.plotter.camera.SetFocalPoint(cx, cy, cz)
-            self.plotter.camera.SetViewUp(0, 1, 0)
-            self.plotter.renderer.ResetCameraClippingRange()
-            self.__console.info("Camera set to XY Plane (Top View)")
-            self.plotter.render()
-        
+            self._set_camera_view((0, 0, 1), (0, 1, 0), "XY Plane (Top View)")
         elif key == '2': # YZ Plane (Side View)
-            self.plotter.camera.SetPosition(cx + dist, cy, cz)
-            self.plotter.camera.SetFocalPoint(cx, cy, cz)
-            self.plotter.camera.SetViewUp(0, 0, 1)
-            self.plotter.renderer.ResetCameraClippingRange()
-            self.__console.info("Camera set to YZ Plane (Side View)")
-            self.plotter.render()
-
+            self._set_camera_view((1, 0, 0), (0, 0, 1), "YZ Plane (Side View)")
         elif key == '3': # XZ Plane (Front View)
-            self.plotter.camera.SetPosition(cx, cy - dist, cz) # Look from -Y
-            self.plotter.camera.SetFocalPoint(cx, cy, cz)
-            self.plotter.camera.SetViewUp(0, 0, 1)
-            self.plotter.renderer.ResetCameraClippingRange()
-            self.__console.info("Camera set to XZ Plane (Front View)")
-            self.plotter.render()
+            self._set_camera_view((0, -1, 0), (0, 0, 1), "XZ Plane (Front View)")
+        elif key == '4': # Isometric View
+            self._set_camera_view((1, 1, 1), (0, 0, 1), "Isometric View")
 
-    def _convert_to_vedo(self, name, geometry):
-        """Convert Open3D geometry (Tensor or Legacy) to Vedo Actor"""
-        try:
-            # Handle Tensor Geometry (convert to legacy/numpy first)
-            if isinstance(geometry, o3d.t.geometry.TriangleMesh):
-                # Ensure CPU device
-                mesh_cpu = geometry.cpu()
-                vertices = mesh_cpu.vertex.positions.numpy()
-                faces = mesh_cpu.triangle.indices.numpy()
-                
-                # Check for colors
-                colors = None
-                if 'colors' in mesh_cpu.vertex:
-                    colors = mesh_cpu.vertex.colors.numpy() * 255 # Vedo expects 0-255 or 0-1? 
-                    # Vedo mesh.c() usually takes name or hex. mesh.pointdata['RGBA'] can be used.
-                
-                actor = vedo.Mesh([vertices, faces])
-                
-                # If it's the coordinate frame, color it appropriately if possible, 
-                # but standard O3D coord frame is mesh. 
-                # For simplicity, apply a default color or try to transfer colors if complex.
-                if "origin_coordinate" in name:
-                     # Re-create axes using vedo for better look
-                     return vedo.Axes(xrange=[0,1], yrange=[0,1], zrange=[0,1]) # Simplified
-                
-                 # If ground, color it
-                if "ground" in name:
-                     actor.c("gray").alpha(0.5)
+    def _set_camera_view(self, direction, view_up, label=None):
+        """Set camera view from a direction vector, preserving current zoom level.
+        
+        Args:
+            direction: (x, y, z) direction vector from focal point to camera
+            view_up: (x, y, z) camera up-direction tuple
+            label: optional log label for the view
+        """
+        if not hasattr(self, 'c_center'):
+            return
+        cx, cy, cz = self.c_center
 
-                return actor
+        # Get current camera distance (zoom level) from focal point
+        cam_pos = np.array(self.plotter.camera.GetPosition())
+        focal = np.array([cx, cy, cz])
+        current_dist = np.linalg.norm(cam_pos - focal)
+        if current_dist < 1e-6:
+            current_dist = max(self.c_bounds) * 2.0  # fallback
 
-            elif isinstance(geometry, o3d.geometry.TriangleMesh):
-                 # Legacy Mesh
-                 vertices = np.asarray(geometry.vertices)
-                 triangles = np.asarray(geometry.triangles)
-                 actor = vedo.Mesh([vertices, triangles])
-                 return actor
-            
-            # Add other types (PointCloud, etc) if needed
-            return None
-        except Exception as e:
-            self.__console.error(f"Failed to convert geometry {name}: {e}")
-            return None
+        # Normalize direction and apply current distance
+        d = np.array(direction, dtype=float)
+        d = d / np.linalg.norm(d)
+        new_pos = focal + d * current_dist
+
+        self.plotter.camera.SetPosition(*new_pos)
+        self.plotter.camera.SetFocalPoint(cx, cy, cz)
+        self.plotter.camera.SetViewUp(*view_up)
+        self.plotter.renderer.ResetCameraClippingRange()
+        self.plotter.render()
+        if label:
+            self.__console.info(f"Camera set to {label}")
 
     def run(self, frequency_hz: int):
         self.target_frequency_hz = frequency_hz
@@ -200,17 +147,16 @@ class VedoVisualizer:
         
         # shape initial view to 3D perspective if C-Space is defined
         if hasattr(self, 'c_bounds'):
-             cx, cy, cz = self.c_center
              max_dim = max(self.c_bounds)
-             # Isometric-like view
              self.plotter.show(interactive=False)
-             # Manually set camera after show (or before, but sometimes show resets it if no objects)
              if self.plotter.camera:
-                 self.plotter.camera.SetPosition(cx + max_dim*2.0, cy - max_dim*2.0, cz + max_dim*2.0)
+                 # Set initial distance, then apply isometric direction
+                 cx, cy, cz = self.c_center
+                 init_dist = max_dim * 2.0
+                 iso_d = init_dist / np.sqrt(3)
+                 self.plotter.camera.SetPosition(cx + iso_d, cy + iso_d, cz + iso_d)
                  self.plotter.camera.SetFocalPoint(cx, cy, cz)
-                 self.plotter.camera.SetViewUp(0, 0, 1)
-                 self.plotter.renderer.ResetCameraClippingRange()
-                 self.plotter.render()
+                 self._set_camera_view((1, 1, 1), (0, 0, 1))
         else:
              self.plotter.show(interactive=False)
         
@@ -246,33 +192,34 @@ class VedoVisualizer:
         # 1. Log Frequency
         self.loop_count, self.last_log_time = self._log_rendering_frequency(self.loop_count, self.last_log_time)
         
-        # 2. Poll ZMQ Messages
+        # 2. Process requests from ZApi queue
         processed_count = 0
-        while True:
-            try:
-                with self._message_lock:
-                    if not self._pending_messages:
-                        break
-                    multipart_data = self._pending_messages.popleft()
-                
-                self._process_data(multipart_data)
-                processed_count += 1
-                if processed_count > 10: 
+        while processed_count < 10:
+            with self._queue_lock:
+                if not self._request_queue:
                     break
-            except Exception as e:
-                self.__console.error(f"Error processing message: {e}")
-                break
+                request_data = self._request_queue.popleft()
+            
+            self._process_request(request_data)
+            processed_count += 1
         
         return True
 
-    def _process_data(self, multipart_data):
-         # Placeholder for data processing
-         pass
+    def _process_request(self, request_data):
+        """Process a request from the ZApi queue.
+        Override or extend this method to handle specific rendering commands.
+        """
+        pass
+
+    def push_request(self, data):
+        """Thread-safe method for ZApi to push requests into the visualizer queue."""
+        with self._queue_lock:
+            self._request_queue.append(data)
 
     def _log_rendering_frequency(self, loop_count, last_log_time):
         current_time = time.time()
         
-        # 1. Calculate Instantaneous FPS for Text Overlay
+        # Calculate Instantaneous FPS for Text Overlay
         frame_duration = current_time - self.last_frame_time
         if frame_duration > 0:
             inst_fps = 1.0 / frame_duration
@@ -284,36 +231,6 @@ class VedoVisualizer:
         return loop_count, last_log_time
 
     def on_close(self):
-        # Send termination signal
-        if hasattr(self, '_VedoVisualizer__sys_socket') and self.__sys_socket:
-             zapi.zapi_destroy(self.__sys_socket)
-             time.sleep(0.1)
-             self.__sys_socket.destroy_socket()
-
-        # Clean up subscriber socket
-        if hasattr(self, '_VedoVisualizer__socket') and self.__socket:
-            self.__socket.destroy_socket()
-            self.__console.debug(f"({self.__class__.__name__}) Destroyed socket")
-        
-    def __on_data_received(self, multipart_data):
-        """Callback function for zpipe data reception"""
-        try:
-            if len(multipart_data) >= 2:
-                topic = multipart_data[0]
-                msg = multipart_data[1]
-                
-                # CHECK FOR SYSTEM TERMINATION
-                if zapi.zapi_check_system_message(topic, msg):
-                    self.__console.warning("Received TERMINATION signal")
-                    self._should_close = True
-                    return
-
-                with self._message_lock:
-                    if len(self._pending_messages) >= self._pending_messages.maxlen:
-                        self._message_stats['dropped'] += 1
-                    
-                    self._pending_messages.append(multipart_data)
-                    self._message_stats['received'] += 1
-                    
-        except Exception as e:
-            self.__console.error(f"({self.__class__.__name__}) Error processing received data: {e}")
+        """Cleanup on visualizer close. Socket cleanup is handled by VedoZApi."""
+        self._should_close = True
+        self.__console.debug("Visualizer on_close called")

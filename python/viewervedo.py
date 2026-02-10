@@ -6,12 +6,11 @@ DRT 3D Viewer 3D App with Vedo(https://vedo.embl.es/)
 import sys, os
 import pathlib
 import json
-import open3d as o3d
-import zmq
 import argparse
 
 from util.logger.console import ConsoleLogger
 from viewervedo.visualizer import VedoVisualizer
+from viewervedo.zapi import VedoZApi
 from common.zpipe import zpipe_create_pipe, zpipe_destroy_pipe
 from common.zpipe import ZPipe
 
@@ -47,9 +46,18 @@ if __name__ == "__main__":
             n_ctx_value = configure.get("n_io_context", 10)
             zpipe_instance = zpipe_create_pipe(io_threads=n_ctx_value)
 
-            # viewer (using vedo)
-            viewer = VedoVisualizer(config=configure, zpipe=zpipe_instance)
+            # create visualizer (rendering only)
+            viewer = VedoVisualizer(config=configure)
+
+            # create zapi (communication layer)
+            zapi = VedoZApi(config=configure, zpipe=zpipe_instance, visualizer=viewer)
+            zapi.run()
+
+            # run render loop (blocks until close)
             viewer.run(60)
+
+            # cleanup communication
+            zapi.stop()
 
             # terminate pipeline
             zpipe_destroy_pipe()
