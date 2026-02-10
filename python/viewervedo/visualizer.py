@@ -10,7 +10,6 @@ from collections import deque
 import time
 import numpy as np
 import vedo
-import open3d as o3d
 from util.logger.console import ConsoleLogger
 from common.zpipe import AsyncZSocket, ZPipe
 
