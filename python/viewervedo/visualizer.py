@@ -2,8 +2,8 @@
 3D Visualizer using Vedo
 @note
 - Vedo is a Python library for 3D visualization based on VTK (Visualization Toolkit).
-- VedoVisualizer is a class that renders 3D geometries
-- All ZMQ communication is handled by VedoZApi (viewervedo/zapi.py)
+- Visualizer is a class that renders 3D geometries
+- All ZMQ communication is handled by Zapi (viewervedo/zapi.py)
 """
 
 import threading
@@ -16,14 +16,14 @@ from common.graphic_device import GraphicDevice
 from viewervedo.robot import load_robots_from_config
 
 
-class VedoVisualizer:
+class Visualizer:
     def __init__(self, config:dict=None):
         if config is None:
             config = {}
     
         self.__console = ConsoleLogger.get_logger()
 
-        # Thread-safe request queue (populated by VedoZApi)
+        # Thread-safe request queue (populated by Zapi)
         self._request_queue = deque(maxlen=100)
         self._queue_lock = threading.Lock()
 
@@ -43,37 +43,15 @@ class VedoVisualizer:
         window_size = config.get('window_size', [1920, 1080])
         bg_color = config.get('background_color', [1.0, 1.0, 1.0])
         
+        # create plotter
         self.plotter = vedo.Plotter(title=window_title, size=window_size, bg=bg_color, interactive=False)
-                
 
-        # Add C-Space Axes/Box if requested
-        if config.get("show_axes", False):
-             self.c_bounds = config.get("c_space_bound", [5.0, 8.0, 5.0])
-             c_bounds = self.c_bounds
-             self.c_center = [self.c_bounds[0]/2, self.c_bounds[1]/2, self.c_bounds[2]/2]
-
-             c_space_box = vedo.Box(pos=(c_bounds[0]/2, c_bounds[1]/2, c_bounds[2]/2), length=c_bounds[0], width=c_bounds[1], height=c_bounds[2])
-             c_space_box.wireframe().c('gray').alpha(0.3)
-             
-             # Create custom axes with 1-unit intervals
-             x_ticks = [(i, str(i)) for i in range(int(c_bounds[0]) + 1)]
-             y_ticks = [(i, str(i)) for i in range(int(c_bounds[1]) + 1)]
-             z_ticks = [(i, str(i)) for i in range(int(c_bounds[2]) + 1)]
-             
-             axes_config = dict(xtitle='X', x_values_and_labels=x_ticks, ytitle='Y', y_values_and_labels=y_ticks, ztitle='Z', z_values_and_labels=z_ticks, c='black')
-             c_space_axes = vedo.Axes(c_space_box, **axes_config)
-
-             self.plotter.add(c_space_box, c_space_axes)
-
-        # Load robot models from config
-        if config.get("show_robot", False):
-            robot_actors = load_robots_from_config(config)
-            if robot_actors:
-                self.plotter.add(*robot_actors)
-                self.__console.info(f"Added {len(robot_actors)} robot mesh actors to plotter")
+        # Setup scene elements
+        self._setup_c_space(config)
+        self._setup_robots(config)
 
         
-        # Flag for external termination (set by VedoZApi)
+        # Flag for external termination (set by Zapi)
         self._should_close = False
 
         self.loop_count = 0
@@ -88,6 +66,45 @@ class VedoVisualizer:
 
         # Register key callback
         self.plotter.add_callback("KeyPress", self._on_key_press)
+
+    def _setup_c_space(self, config: dict):
+        """Add C-Space bounding box and axes to the plotter."""
+        if not config.get("show_c_space", False):
+            return
+
+        self.c_bounds = config.get("c_space_bound", [5.0, 8.0, 5.0])
+        c_bounds = self.c_bounds
+        self.c_center = [c_bounds[0]/2, c_bounds[1]/2, c_bounds[2]/2]
+
+        c_space_box = vedo.Box(
+            pos=(c_bounds[0]/2, c_bounds[1]/2, c_bounds[2]/2),
+            length=c_bounds[0], width=c_bounds[1], height=c_bounds[2]
+        )
+        c_space_box.wireframe().c('gray').alpha(0.3)
+
+        # Create custom axes with 1-unit intervals
+        x_ticks = [(i, str(i)) for i in range(int(c_bounds[0]) + 1)]
+        y_ticks = [(i, str(i)) for i in range(int(c_bounds[1]) + 1)]
+        z_ticks = [(i, str(i)) for i in range(int(c_bounds[2]) + 1)]
+
+        axes_config = dict(
+            xtitle='X', x_values_and_labels=x_ticks,
+            ytitle='Y', y_values_and_labels=y_ticks,
+            ztitle='Z', z_values_and_labels=z_ticks,
+            c='black'
+        )
+        c_space_axes = vedo.Axes(c_space_box, **axes_config)
+        self.plotter.add(c_space_box, c_space_axes)
+
+    def _setup_robots(self, config: dict):
+        """Load robot URDF models and add their meshes to the plotter."""
+        if not config.get("show_robot", False):
+            return
+
+        robot_actors = load_robots_from_config(config)
+        if robot_actors:
+            self.plotter.add(*robot_actors)
+            self.__console.info(f"Added {len(robot_actors)} robot mesh actors to plotter")
 
     def _on_key_press(self, event):
         """Handle key press events for camera control"""
@@ -206,10 +223,46 @@ class VedoVisualizer:
         return True
 
     def _process_request(self, request_data):
-        """Process a request from the ZApi queue.
-        Override or extend this method to handle specific rendering commands.
-        """
-        pass
+        """Process a request from the ZApi queue."""
+        try:
+            # Handle dictionary payload from zapi_* handlers
+            if isinstance(request_data, dict):
+                command = request_data.get("command")
+                if command == "load_spool":
+                    path = request_data.get("path")
+                    if path:
+                        self.__console.info(f"Loading Spool: {path}")
+                        try:
+                            mesh = vedo.load(path)
+                            if mesh:
+                                self.plotter.add(mesh)
+                                self.plotter.render()
+                                self.__console.info(f"Successfully loaded {path}")
+                                
+                                # Send reply
+                                if hasattr(self, 'zapi') and self.zapi:
+                                    identity = request_data.get("_identity")
+                                    self.zapi.reply_load_spool(path, True, identity=identity)
+                            else:
+                                self.__console.error(f"Failed to load mesh from {path}")
+                                if hasattr(self, 'zapi') and self.zapi:
+                                    identity = request_data.get("_identity")
+                                    self.zapi.reply_load_spool(path, False, identity=identity)
+                        except Exception as e:
+                            self.__console.error(f"Exception loading mesh: {e}")
+                            if hasattr(self, 'zapi') and self.zapi:
+                                self.zapi.reply_load_spool(path, False)
+            
+            # Legacy/Raw handling (list/tuple)
+            elif isinstance(request_data, (list, tuple)) and len(request_data) >= 2:
+                 pass # Handle raw messages if any
+                 
+        except Exception as e:
+            self.__console.error(f"Error processing request: {e}")
+
+    def set_zapi(self, zapi):
+        """Set the ZApi instance for callbacks."""
+        self.zapi = zapi
 
     def push_request(self, data):
         """Thread-safe method for ZApi to push requests into the visualizer queue."""
@@ -231,6 +284,6 @@ class VedoVisualizer:
         return loop_count, last_log_time
 
     def on_close(self):
-        """Cleanup on visualizer close. Socket cleanup is handled by VedoZApi."""
+        """Cleanup on visualizer close. Socket cleanup is handled by Zapi."""
         self._should_close = True
         self.__console.debug("Visualizer on_close called")

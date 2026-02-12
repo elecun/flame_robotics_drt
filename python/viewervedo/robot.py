@@ -1,5 +1,5 @@
 """
-Robot URDF Loader for VedoVisualizer
+Robot URDF Loader for Visualizer
 @note
 - Uses urdf_parser.urdf.URDF to load and parse URDF files
 - Leverages built-in forward kinematics from the URDF parser

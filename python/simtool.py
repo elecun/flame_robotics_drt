@@ -59,6 +59,7 @@ if __name__ == "__main__":
             n_ctx_value = configure.get("n_io_context", 10)
             zpipe_instance = zpipe_create_pipe(io_threads=n_ctx_value)
 
+            # run application
             app = QApplication(sys.argv)
             font_id = QFontDatabase.addApplicationFont((ROOT_PATH / configure['font_path']).as_posix())
             font_family = QFontDatabase.applicationFontFamilies(font_id)[0]

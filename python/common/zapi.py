@@ -1,54 +1,46 @@
 """
-ZAPI (ZeroMQ API) for System Communications
+ZAPI (ZeroMQ API) Base Class
 Provides common definitions and helper functions for system-level signaling
 """
 
-TOPIC_SYSTEM = "sys"
-CMD_TERMINATE = "terminate"
+import json
+from common.zpipe import AsyncZSocket
 
-def zapi_destroy(pub_socket):
-    """
-    Sends a system termination signal via the provided publisher socket.
-    
-    Args:
-        pub_socket: AsyncZSocket instance with 'publish' pattern
-    """
-    if pub_socket and pub_socket.is_joined:
-        pub_socket.dispatch([TOPIC_SYSTEM, CMD_TERMINATE])
-
-def zapi_check_system_message(topic, msg):
-    """
-    Checks if a received message is a system termination signal.
-    
-    Args:
-        topic: Received topic (bytes or str)
-        msg: Received message part (bytes or str or list)
-        
-    Returns:
-        bool: True if it is a termination signal
-    """
-    # Normalize inputs to strings if possible
-    try:
-        if isinstance(topic, bytes):
-            topic = topic.decode('utf-8')
-        if isinstance(msg, bytes):
-            msg = msg.decode('utf-8')
-        elif isinstance(msg, list):
-            # If msg is a list (multipart), usually the first part is the payload if topic was separated
-            # Check if any part matches CMD_TERMINATE
-            for m in msg:
-                if isinstance(m, bytes):
-                     if m.decode('utf-8') == CMD_TERMINATE:
-                         return True
-                elif isinstance(m, str):
-                     if m == CMD_TERMINATE:
-                         return True
-            return False
-            
-        if topic == TOPIC_SYSTEM and msg == CMD_TERMINATE:
-            return True
-            
-    except Exception:
+class ZapiBase:
+    def __init__(self):
         pass
+
+    def call(self, socket: AsyncZSocket, function: str, kwargs: dict) -> bool:
+        """
+        Call a remote function via Zpipe socket using standardized multipart message format.
+        Format: [socket_name, function, json_kwargs]
         
-    return False
+        Args:
+            socket: AsyncZSocket instance
+            function: Name of the function to call (str)
+            kwargs: Dictionary of arguments
+            
+        Returns:
+            bool: True if dispatched successfully
+        """
+        try:
+            if socket:
+                # Construct multipart message: [socket_name, function, json_kwargs]
+                # socket_name is used to identify the sender or context if needed, 
+                # but typically the receiver might need to know who sent it or just the function.
+                # The user request said: "socket_name, function 이름, kwargs로 되는 dictionary를 multipart로 보내는 역할"
+                
+                socket_name = socket.socket_id
+                
+                parts = [
+                    socket_name.encode('utf-8'),
+                    function.encode('utf-8'),
+                    json.dumps(kwargs).encode('utf-8')
+                ]
+                
+                socket.dispatch(parts)
+                return True
+            else:
+                return False
+        except Exception:
+            return False

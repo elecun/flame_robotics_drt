@@ -34,12 +34,14 @@ from plugins.pluginbase.optimizerbase import OptimizerBase
 
 
 class AppWindow(QMainWindow):
-    def __init__(self, config:dict, zpipe:ZPipe):
+    def __init__(self, config:dict, zpipe):
         """ initialization """
         super().__init__()
         
         self.__console = ConsoleLogger.get_logger()
         self.__config = config
+        self.zpipe = zpipe
+        self.zapi = None
 
         try:            
             if "gui" in config:
@@ -47,43 +49,26 @@ class AppWindow(QMainWindow):
                 ui_path = pathlib.Path(config["app_path"]) / config["gui"]
                 if os.path.isfile(ui_path):
                     loadUi(ui_path, self)
-                    self.setWindowTitle(config.get("window_title", "DRT Tool Window"))
+                    self.setWindowTitle(config.get("window_title", "DRT Simulation Tool"))
 
                     # Load plugins and samples
                     self.load_plugins()
 
-                    # Create socket for communication (as server)
-                    self.__socket = AsyncZSocket("SimTool", "publish")
-                    if self.__socket.create(pipeline=zpipe):
-                        transport = config.get("transport", "tcp")
-                        port = config.get("port", 9002) # SimTool binds 9002
-                        host = config.get("host", "*")  # Binds to all
-                        if self.__socket.join(transport, host, port):
-                            self.__socket.set_message_callback(self.__on_data_received) # PUB usually doesn't recv but fine
-                            self.__console.debug(f"Socket created : {transport}://{host}:{port}")
-                        else:
-                            self.__console.error("Failed to join AsyncZsocket")
-                    else:
-                        self.__console.error("Failed to create AsyncZsocket")
-                        
-                    # Create System Subscriber socket (Listen to Viewer on 9003)
-                    self.__sys_sub = AsyncZSocket("SimToolSysSub", "subscribe")
-                    if self.__sys_sub.create(pipeline=zpipe):
-                        # Connect to Viewer
-                        # Viewer binds 9003 on *
-                        # We connect to localhost:9003 (assuming local)
-                        sys_port = 9003
-                        if self.__sys_sub.join("tcp", "localhost", sys_port):
-                            self.__sys_sub.subscribe(zapi.TOPIC_SYSTEM)
-                            # We use the SAME callback or a new one?
-                            # Use same for simplicity, handle in __on_data_received
-                            self.__sys_sub.set_message_callback(self.__on_data_received)
-                            self.__console.debug(f"Connected to System Bus on port {sys_port}")
-                        else:
-                             self.__console.error("Failed to connect to System Bus")
+                    # connect UI componens signals
+                    self._connect_signals()
 
                 else:
                     raise Exception(f"Cannot found UI file : {ui_path}")
+            
+            # Initialize ZAPI if not provided (though simtool.py passes zpipe instance, we need SimToolZApi instance)
+            if self.zpipe:
+                from simtool.zapi import ZAPI
+                self.zapi = ZAPI(config, self.zpipe)
+                self.zapi.set_message_callback(self._handle_message)
+                self.zapi.run()
+                self.__console.info("ZAPI started")
+            else:
+                 self.__console.error("ZPipe instance missing, ZAPI not started")
                 
         except Exception as e:
             self.__console.error(f"{e}")
@@ -106,7 +91,6 @@ class AppWindow(QMainWindow):
                         for name, obj in inspect.getmembers(module):
                             if inspect.isclass(obj) and issubclass(obj, PlannerBase) and obj is not PlannerBase:
                                 self.cbx_plugin_pathplanner.addItem(obj.__name__)
-                                self.__console.debug(f"Loaded PathPlanner: {obj.__name__}")
                     except Exception as e:
                         self.__console.error(f"Failed to load planner plugin {module_name}: {e}")
             else:
@@ -126,7 +110,6 @@ class AppWindow(QMainWindow):
                         for name, obj in inspect.getmembers(module):
                             if inspect.isclass(obj) and issubclass(obj, OptimizerBase) and obj is not OptimizerBase:
                                 self.cbx_plugin_optimizer.addItem(obj.__name__)
-                                self.__console.debug(f"Loaded Optimizer: {obj.__name__}")
                     except Exception as e:
                         self.__console.error(f"Failed to load optimizer plugin {module_name}: {e}")
             else:
@@ -140,45 +123,77 @@ class AppWindow(QMainWindow):
                 for file_path in sample_path.iterdir():
                     if file_path.suffix.lower() in ['.pcd', '.ply']:
                         self.cbx_pipe_spool.addItem(file_path.name)
-                        self.__console.debug(f"Loaded Sample: {file_path.name}")
             else:
                 self.__console.warning(f"Sample directory not found: {sample_path}")
 
-    def __on_data_received(self, multipart_data):
-        """Callback function for zpipe data reception"""
+
+    def _connect_signals(self):
+        """Connect UI signals"""
+        if hasattr(self, 'btn_load_spool'):
+            self.btn_load_spool.clicked.connect(self.on_btn_load_spool_clicked)
+
+    def on_btn_load_spool_clicked(self):
+        """Handle Load Spool button click"""
         try:
-            if len(multipart_data) >= 2:
-                topic = multipart_data[0]
-                msg = multipart_data[1]
+            if hasattr(self, 'cbx_pipe_spool'):
+                current_text = self.cbx_pipe_spool.currentText()
+                if not current_text:
+                    self.__console.warning("No spool file selected")
+                    return
                 
-                # Check for Termination Signal
-                if zapi.zapi_check_system_message(topic, msg):
-                     self.__console.warning("Received TERMINATION signal - Exiting...")
-                     QApplication.quit() # This will close windows and trigger cleanup
-                     return
-                     
-                self.__call(topic, msg)
+                # Resolve full path
+                sample_path = pathlib.Path(self.__config.get("root_path", "")) / "sample" / current_text
+                if sample_path.exists():
+                    if self.zapi:
+                        self.zapi.load_spool(str(sample_path.absolute()))
+                        self.__console.info(f"Requested to load spool: {current_text}")
+                    else:
+                        self.__console.error("ZApi instance not available")
+                else:
+                    self.__console.error(f"Spool file not found: {sample_path}")
         except Exception as e:
-            self.__console.error(f"({self.__class__.__name__}) Error processing received data: {e}")
+            self.__console.error(f"Error loading spool: {e}")
+
+    def _handle_message(self, topic, msg):
+        """Handle incoming ZMQ messages"""
+        try:
+            # Decode if bytes
+            if isinstance(topic, bytes):
+                topic = topic.decode('utf-8')
+            if isinstance(msg, bytes):
+                msg = msg.decode('utf-8')
+            
+            # Check termination
+            if zapi.zapi_check_system_message(topic, msg):
+                 self.__console.warning("Received TERMINATION signal - Exiting...")
+                 QApplication.quit()
+                 return
+
+            if topic == "call":
+                try:
+                    payload = json.loads(msg)
+                    command = payload.get("command")
+                    if command == "reply_load_spool":
+                        path = payload.get("path")
+                        status = payload.get("status")
+                        if status == "success":
+                            self.__console.info(f"Viewer successfully loaded spool: {path}")
+                            QMessageBox.information(self, "Load Spool", f"Successfully loaded:\n{os.path.basename(path)}")
+                        else:
+                            self.__console.error(f"Viewer failed to load spool: {path}")
+                            QMessageBox.warning(self, "Load Spool", f"Failed to load:\n{os.path.basename(path)}")
+                except json.JSONDecodeError:
+                    pass
+        except Exception as e:
+            self.__console.error(f"Error handling message: {e}")
     
     def closeEvent(self, event:QCloseEvent) -> None:
         """ Handle close event """
         try:
-            # Broadcast termination
-            if hasattr(self, '_AppWindow__socket') and self.__socket:
-                zapi.zapi_destroy(self.__socket)
-                # Give time for msg to be sent
-                # zmq might handle it asynchronously, but a small process sleep helps ensure network flush
-                import time
-                time.sleep(0.1)
-
-            # Clean up subscriber socket first
-            if hasattr(self, '_AppWindow__socket') and self.__socket:
-                self.__socket.destroy_socket()
-                self.__console.debug(f"({self.__class__.__name__}) Destroyed socket")
-            
-            if hasattr(self, '_AppWindow__sys_sub') and self.__sys_sub:
-                self.__sys_sub.destroy_socket()
+            # ZAPI cleanup
+            if hasattr(self, 'zapi') and self.zapi:
+                self.zapi.stop()
+                self.__console.info("ZAPI stopped")
 
         except Exception as e:
             self.__console.error(f"Error during window close: {e}")

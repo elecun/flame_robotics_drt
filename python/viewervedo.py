@@ -9,8 +9,8 @@ import json
 import argparse
 
 from util.logger.console import ConsoleLogger
-from viewervedo.visualizer import VedoVisualizer
-from viewervedo.zapi import VedoZApi
+from viewervedo.visualizer import Visualizer
+from viewervedo.zapi import Zapi
 from common.zpipe import zpipe_create_pipe, zpipe_destroy_pipe
 from common.zpipe import ZPipe
 
@@ -47,10 +47,11 @@ if __name__ == "__main__":
             zpipe_instance = zpipe_create_pipe(io_threads=n_ctx_value)
 
             # create visualizer (rendering only)
-            viewer = VedoVisualizer(config=configure)
+            viewer = Visualizer(config=configure)
 
             # create zapi (communication layer)
-            zapi = VedoZApi(config=configure, zpipe=zpipe_instance, visualizer=viewer)
+            zapi = Zapi(config=configure, zpipe=zpipe_instance, visualizer=viewer)
+            viewer.set_zapi(zapi)
             zapi.run()
 
             # run render loop (blocks until close)

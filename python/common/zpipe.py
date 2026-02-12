@@ -1,6 +1,5 @@
 """
 ZMQ Pipeline Module (named ZPipe)
-Provides abstraction for ZMQ publish, subscribe, push, pull patterns
 @author Byunghun Hwang <bh.hwang@iae.re.kr>
 """
 
@@ -119,7 +118,12 @@ class AsyncZSocket:
             if transport in ['inproc', 'ipc']:
                 conn_str = f"{transport}://{address}"
             else:  # tcp, pgm, epgm
-                conn_str = f"{transport}://{address}:{port}"
+                # For binding, address='*' is valid relative to transport (tcp://*:port)
+                # For connecting, address='*' is invalid.
+                if self.is_server and address in ["*", "0.0.0.0"]:
+                     conn_str = f"{transport}://*:{port}"
+                else:
+                     conn_str = f"{transport}://{address}:{port}"
             
             # Bind or connect based on pattern
             if self.is_server:
