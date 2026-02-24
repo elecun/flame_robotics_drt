@@ -13,21 +13,12 @@ try:
 except ImportError:
     print("PyQt6 is required to run this application.")
 
-import zmq
 import os, sys
 import pathlib
 import json
-import threading
-import re
-import numpy as np
-import math
 import importlib
 import inspect
-import pkgutil
-from common import zapi
-from functools import partial
 
-from common.zpipe import AsyncZSocket, ZPipe
 from util.logger.console import ConsoleLogger
 from plugins.pluginbase.plannerbase import PlannerBase
 from plugins.pluginbase.optimizerbase import OptimizerBase
@@ -52,68 +43,87 @@ class AppWindow(QMainWindow):
                     self.setWindowTitle(config.get("window_title", "DRT Simulation Tool"))
 
                     # Load plugins and samples
-                    self.load_plugins()
+                    self.__load_plugins()
 
                     # connect UI componens signals
-                    self._connect_signals()
+                    self.__connect_signals()
 
                 else:
                     raise Exception(f"Cannot found UI file : {ui_path}")
             
-            # Initialize ZAPI if not provided (though simtool.py passes zpipe instance, we need SimToolZApi instance)
+            # Initialize ZAPI and Start ZAPI
             if self.zpipe:
                 from simtool.zapi import ZAPI
-                self.zapi = ZAPI(config, self.zpipe)
-                self.zapi.set_message_callback(self._handle_message)
+                zapi_config = self.__config.get("zapi", {})
+                transport = zapi_config.get("transport", "ipc")
+                channel = zapi_config.get("channel", "/tmp/viewervedo")
+                
+                self.zapi = ZAPI(zpipe=self.zpipe, transport=transport, channel=channel)
+                self.zapi.signal_message_received.connect(self._handle_message)
                 self.zapi.run()
-                self.__console.info("ZAPI started")
+                self.__console.info("Now ZAPI is running for SimTool")
             else:
                  self.__console.error("ZPipe instance missing, ZAPI not started")
                 
         except Exception as e:
             self.__console.error(f"{e}")
 
-    def load_plugins(self):
+    def __load_plugins(self):
         """
         Load plugins and populate comboboxes
         """
-        # 1. Load Path Planners
-        if hasattr(self, 'cbx_plugin_pathplanner'):
-            self.cbx_plugin_pathplanner.clear()
-            planner_path = pathlib.Path(self.__config.get("root_path", "")) / "python/plugins/pathplanner"
-            if planner_path.exists():
-                for file_path in planner_path.glob("*.py"):
-                    if file_path.name == "__init__.py":
-                        continue
-                    module_name = f"plugins.pathplanner.{file_path.stem}"
-                    try:
-                        module = importlib.import_module(module_name)
-                        for name, obj in inspect.getmembers(module):
-                            if inspect.isclass(obj) and issubclass(obj, PlannerBase) and obj is not PlannerBase:
-                                self.cbx_plugin_pathplanner.addItem(obj.__name__)
-                    except Exception as e:
-                        self.__console.error(f"Failed to load planner plugin {module_name}: {e}")
-            else:
-                self.__console.warning(f"PathPlanner plugin directory not found: {planner_path}")
+        
+        # Load Path Planners and Optimizers
+        plugin_categories = [
+            {
+                "name": "PathPlanner",
+                "path": "python/plugins/pathplanner",
+                "package_prefix": "plugins.pathplanner",
+                "base_class": PlannerBase,
+                "combobox": getattr(self, 'cbx_plugin_pathplanner', None)
+            },
+            {
+                "name": "Optimizer",
+                "path": "python/plugins/optimizer",
+                "package_prefix": "plugins.optimizer",
+                "base_class": OptimizerBase,
+                "combobox": getattr(self, 'cbx_plugin_optimizer', None)
+            }
+        ]
 
-        # 2. Load Optimizers
-        if hasattr(self, 'cbx_plugin_optimizer'):
-            self.cbx_plugin_optimizer.clear()
-            optimizer_path = pathlib.Path(self.__config.get("root_path", "")) / "python/plugins/optimizer"
-            if optimizer_path.exists():
-                for file_path in optimizer_path.glob("*.py"):
-                    if file_path.name == "__init__.py":
-                        continue
-                    module_name = f"plugins.optimizer.{file_path.stem}"
-                    try:
-                        module = importlib.import_module(module_name)
-                        for name, obj in inspect.getmembers(module):
-                            if inspect.isclass(obj) and issubclass(obj, OptimizerBase) and obj is not OptimizerBase:
-                                self.cbx_plugin_optimizer.addItem(obj.__name__)
-                    except Exception as e:
-                        self.__console.error(f"Failed to load optimizer plugin {module_name}: {e}")
-            else:
-                 self.__console.warning(f"Optimizer plugin directory not found: {optimizer_path}")
+        for category in plugin_categories:
+            combobox = category["combobox"]
+            
+            if combobox is not None:
+                try:
+                    combobox.clear()
+                    
+                    root_path = self.__config.get("root_path", "")
+                    plugin_path = pathlib.Path(root_path) / category["path"]
+                    
+                    if plugin_path.exists():
+                        files = list(plugin_path.glob("*.py"))
+                        
+                        for file_path in files:
+                            if file_path.name == "__init__.py":
+                                continue
+                            module_name = f"{category['package_prefix']}.{file_path.stem}"
+                            try:
+                                module = importlib.import_module(module_name)
+                                for name, obj in inspect.getmembers(module):
+                                    if inspect.isclass(obj) and issubclass(obj, category["base_class"]): 
+                                        if obj is not category["base_class"]:
+                                            self.__console.info(f"Found plugin class: {obj.__name__}") # LOG INFO
+                                            combobox.addItem(obj.__name__)
+                            except Exception as e:
+                                self.__console.error(f"Failed to load {category['name']} plugin {module_name}: {e}")
+                    else:
+                        self.__console.warning(f"{category['name']} plugin directory not found: {plugin_path}")
+
+                except Exception as e:
+                    import traceback
+                    self.__console.error(f"Error processing category {category['name']}: {e}")
+                    self.__console.error(traceback.format_exc())
 
         # 3. Load Pipe Spool Samples
         if hasattr(self, 'cbx_pipe_spool'):
@@ -127,12 +137,18 @@ class AppWindow(QMainWindow):
                 self.__console.warning(f"Sample directory not found: {sample_path}")
 
 
-    def _connect_signals(self):
+    def __connect_signals(self):
         """Connect UI signals"""
         if hasattr(self, 'btn_load_spool'):
-            self.btn_load_spool.clicked.connect(self.on_btn_load_spool_clicked)
+            self.btn_load_spool.clicked.connect(self.__on_btn_load_spool_clicked)
+        if hasattr(self, 'btn_test_async_zapi_request'):
+            self.btn_test_async_zapi_request.clicked.connect(self.on_btn_test_async_zapi_request_clicked)
 
-    def on_btn_load_spool_clicked(self):
+    def on_btn_test_async_zapi_request_clicked(self):
+        """Handle async ZAPI test request button click"""
+        pass
+
+    def __on_btn_load_spool_clicked(self):
         """Handle Load Spool button click"""
         try:
             if hasattr(self, 'cbx_pipe_spool'):
@@ -145,10 +161,10 @@ class AppWindow(QMainWindow):
                 sample_path = pathlib.Path(self.__config.get("root_path", "")) / "sample" / current_text
                 if sample_path.exists():
                     if self.zapi:
-                        self.zapi.load_spool(str(sample_path.absolute()))
+                        self.zapi._ZAPI_request_load_spool(str(sample_path.absolute()))
                         self.__console.info(f"Requested to load spool: {current_text}")
                     else:
-                        self.__console.error("ZApi instance not available")
+                        self.__console.error("ZAPI instance not available")
                 else:
                     self.__console.error(f"Spool file not found: {sample_path}")
         except Exception as e:
@@ -163,11 +179,7 @@ class AppWindow(QMainWindow):
             if isinstance(msg, bytes):
                 msg = msg.decode('utf-8')
             
-            # Check termination
-            if zapi.zapi_check_system_message(topic, msg):
-                 self.__console.warning("Received TERMINATION signal - Exiting...")
-                 QApplication.quit()
-                 return
+
 
             if topic == "call":
                 try:

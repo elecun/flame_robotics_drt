@@ -55,6 +55,18 @@ def main():
                 if function_name == "load_spool":
                     console.info(f">> Detected 'load_spool' from {socket_name}")
                     console.info(f"   kwargs: {kwargs}")
+
+                    # Send ACK reply
+                    # Router needs to send [identity, socket_name, function, kwargs]
+                    # We use "router" as our socket name
+                    reply = [
+                        identity,
+                        b"router",
+                        b"ack",
+                        b"{}"
+                    ]
+                    console.info(f"Sending ACK to {socket_name} (Identity: {identity})")
+                    router.dispatch(reply)
             else:
                  console.warning("Received message with unexpected frame count")
 

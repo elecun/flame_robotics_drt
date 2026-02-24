@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<robot name="positioner">
+  <!-- 
+       Positioner Base Link
+       Fixed structure, no joints.
+       Mass and inertia are omitted as it is a fixed structure.
+  -->
+  <link name="base_link">
+    <visual>
+      <!-- Adjust scale if your mesh unit is not in meters (default is 1 1 1) -->
+      <!-- Adjust origin if the mesh coordinate center needs fine-tuning -->
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/visual/base.dae" />
+      </geometry>
+      <!-- Optional: Add material color if needed. DAE usually carries its own textures. -->
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/collision/base.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- 
+       NOTE: For some physics simulation environments (like Gazebo or PyBullet),
+       a base_link with no joints or inertia might still fall to the ground 
+       or cause warnings.
+       
+       If you need to strictly fix this model to the world in a physics engine,
+       uncomment the following code block:
+  -->
+  <!--
+  <link name="world"/>
+  <joint name="world_fixed_joint" type="fixed">
+    <parent link="world" />
+    <child link="base_link" />
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+  -->
+</robot>

@@ -12,10 +12,10 @@ from collections import deque
 from typing import Optional
 from util.logger.console import ConsoleLogger
 from common.zpipe import AsyncZSocket, ZPipe
-from common.zapi import ZapiBase
+from common.zapi import ZAPIBase
 
 
-class Zapi(ZapiBase):
+class ZAPI(ZAPIBase):
     """ZMQ communication manager for Visualizer.
     
     Runs a receiver thread that listens for incoming messages and
@@ -28,6 +28,7 @@ class Zapi(ZapiBase):
         if config is None:
             config = {}
 
+        self._config = config
         self.__console = ConsoleLogger.get_logger()
         self._visualizer = visualizer
         self._zpipe = zpipe
@@ -39,61 +40,38 @@ class Zapi(ZapiBase):
         self.request_queue = deque(maxlen=100)
         self._queue_lock = threading.Lock()
 
-        # --- Router Socket (receive data + system commands) ---
-        self.__router_socket = AsyncZSocket("Zapi_Router", "router")
-        if self.__router_socket.create(pipeline=zpipe):
-            transport = config.get("transport", "tcp")
-            port = config.get("port", 9001)
-            # ROUTER is a server, so it should bind. 
-            # If transport is tcp, host should be "*" or "0.0.0.0" to bind to all interfaces.
-            # If user config provides a specific host (e.g. localhost), it binds to that.
-            # Ensure we bind to valid address. If config has 'localhost', bind to 127.0.0.1 or localhost.
-            host = config.get("host", "*") 
-            # If config has '0.0.0.0' or '*', bind to all.
-            if host == "*": host = "0.0.0.0" # Some systems prefer 0.0.0.0 for binding all
-            
-            if self.__router_socket.join(transport, host, port):
-                self.__router_socket.set_message_callback(self._on_message_received)
-                self.__console.debug(f"[ZApi] Router bound: {transport}://{host}:{port}")
-            else:
-                self.__console.error("[ZApi] Failed to bind router socket")
-        else:
-            self.__console.error("[ZApi] Failed to create router socket")
-
-        # --- Publisher Socket (send system commands) ---
-        self._sys_pub_port = config.get("sys_pub_port", 9003)
-        self.__pub_socket = AsyncZSocket("VedoZApi_Pub", "publish")
-        if self.__pub_socket.create(pipeline=zpipe):
-            if self.__pub_socket.join("tcp", "*", self._sys_pub_port):
-                self.__console.debug(f"[ZApi] System Publisher bound to port {self._sys_pub_port}")
-            else:
-                self.__console.error("[ZApi] Failed to bind System Publisher")
+        # Router Socket (receive data + system commands) ---
+        self.__router_socket = AsyncZSocket("ZAPI_VIEWERVEDO", "router")
+        if not self.__router_socket.create(pipeline=zpipe):
+            self.__console.error("[ZAPI_VIEWERVEDO] Failed to create router socket")
 
     def run(self):
         """Start the ZApi communication thread."""
         if self._running:
-            self.__console.warning("[ZApi] Already running")
+            self.__console.warning("[ZAPI_VIEWERVEDO] Already running")
             return
 
         self._running = True
-        self.__console.debug("[ZApi] Communication thread started")
+        self.__console.debug("Starting Viewervedo ZAPI...")
+
+        transport = self._config.get("transport", "ipc")
+        channel = self._config.get("channel", "/tmp/viewervedo")
+
+        self.__router_socket.set_message_callback(self._on_message_received)
+        if self.__router_socket.join(transport, channel):
+            self.__console.debug(f"[ZAPI_VIEWERVEDO] Router bound: {transport}://{channel}")
+        else:
+            self.__console.error("[ZAPI_VIEWERVEDO] Failed to bind router socket")
 
     def stop(self):
         """Stop the ZApi communication thread and cleanup sockets."""
         self._running = False
 
-        # Send termination signal to other processes
-        # common_zapi.zapi_destroy(self.__pub_socket) - function removed.
-        # Use call? System messages might need to be adapted or just commented out for now as requested "delete unused code".
-        pass
-
         # Destroy sockets
         if self.__router_socket:
             self.__router_socket.destroy_socket()
-        if self.__pub_socket:
-            self.__pub_socket.destroy_socket()
 
-        self.__console.debug("[ZApi] Stopped and cleaned up")
+        self.__console.debug("[ZAPI_VIEWERVEDO] Stopped and cleaned up")
 
     # ----------------------------------------------------------------
     # Message reception (called from AsyncZSocket's receiver thread)
@@ -102,14 +80,15 @@ class Zapi(ZapiBase):
         """Callback from AsyncZSocket receiver thread.
         ROUTER socket receives: [identity, socket_name, function, json_kwargs]
         Why?
-        Sender (DEALER) calls ZapiBase.call -> sends [socket_name, function, json_kwargs]
+        Sender (DEALER) calls ZAPIBase.call -> sends [socket_name, function, json_kwargs]
         ROUTER receives -> [identity, socket_name, function, json_kwargs]
         """
+        self.__console.info("-------------")
         try:
             if len(multipart_data) < 4:
-                # Minimum expected for ROUTER receiving from ZapiBase.call:
+                # Minimum expected for ROUTER receiving from ZAPIBase.call:
                 # [identity, socket_name, function, json_kwargs] = 4 parts
-                self.__console.warning(f"[ZApi] Received incomplete message: {len(multipart_data)} parts")
+                self.__console.warning(f"[ZAPI_VIEWERVEDO] Received incomplete message: {len(multipart_data)} parts")
                 return
 
             identity = multipart_data[0]
@@ -125,7 +104,7 @@ class Zapi(ZapiBase):
             self._dispatch_message(identity, function_name_str, json_kwargs)
 
         except Exception as e:
-            self.__console.error(f"[ZApi] Error processing message: {e}")
+            self.__console.error(f"[ZAPI_VIEWERVEDO] Error processing message: {e}")
 
     def _dispatch_message(self, identity, function_name, json_kwargs):
         """Route incoming messages to the appropriate zapi_* handler.
@@ -148,20 +127,24 @@ class Zapi(ZapiBase):
                 kwargs["_identity"] = identity
 
                 # Look up zapi_<function> handler
-                handler_name = f"zapi_{function_name}"
+                if function_name.startswith("zapi_"):
+                    handler_name = function_name
+                else:
+                    handler_name = f"zapi_{function_name}"
+                
                 handler = getattr(self, handler_name, None)
                 
                 if handler and callable(handler):
                     handler(kwargs)
                     return
                 else:
-                    self.__console.warning(f"[ZApi] Unknown function: {function_name}")
+                    self.__console.warning(f"[ZAPI_VIEWERVEDO] Unknown function: {function_name} -> {handler_name}")
                     
             except (json.JSONDecodeError, UnicodeDecodeError):
-                self.__console.error(f"[ZApi] Failed to parse kwargs: {json_kwargs}")
+                self.__console.error(f"[ZAPI_VIEWERVEDO] Failed to parse kwargs: {json_kwargs}")
 
         except Exception as e:
-            self.__console.error(f"[ZApi] Dispatch error: {e}")
+            self.__console.error(f"[ZAPI_VIEWERVEDO] Dispatch error: {e}")
 
     # ----------------------------------------------------------------
     # zapi_* handler functions
@@ -170,19 +153,14 @@ class Zapi(ZapiBase):
         """Handle termination request."""
         if self._visualizer:
             self._visualizer._should_close = True
-        self.__console.info("[ZApi] Termination requested")
+        self.__console.info("[ZAPI_VIEWERVEDO] Termination requested")
 
     def zapi_ping(self, kwargs=None):
         """Handle ping request — reply with pong via router."""
-        self.__console.debug("[ZApi] Received ping, sending pong")
+        self.__console.debug("[ZAPI_VIEWERVEDO] Received ping, sending pong")
         if self.__router_socket and self.__router_socket.is_joined:
             identity = kwargs.get("_identity") if kwargs else None
-            # Standardize reply format? Or keep 'command':'pong'?
-            # Let's use new format for reply too: function='pong', kwargs={}
             if identity:
-                 # Manually dispatch for ROUTER reply because ZapiBase.call sends [socket_name, func, kwargs]
-                 # But ROUTER needs [identity, socket_name, func, kwargs]
-                 
                  # Construct payload
                  socket_name = self.__router_socket.socket_id
                  function = "pong"
@@ -198,11 +176,20 @@ class Zapi(ZapiBase):
 
     def zapi_load_spool(self, kwargs=None):
         """Handle load_spool request."""
+        self.__console.info(f"Received zapi_load_spool with kwargs: {kwargs}")
         if kwargs and "path" in kwargs:
-            self.__console.info(f"[ZApi] Received load_spool request: {kwargs['path']}")
-            self.push_to_queue(kwargs)
+            self.__console.info(f"[ZAPI_VIEWERVEDO] Processing load_spool: {kwargs['path']}")
+            
+            # Bridge to Visualizer: Push to visualizer's thread-safe queue
+            if self._visualizer:
+                # Add command field for visualizer to identify action
+                request_payload = kwargs.copy()
+                request_payload["command"] = "load_spool"
+                self._visualizer.push_request(request_payload)
+            else:
+                self.push_to_queue(kwargs) # Fallback if no visualizer attached
         else:
-            self.__console.warning("[ZApi] Received load_spool request without path")
+            self.__console.warning("[ZAPI_VIEWERVEDO] Received load_spool request without path")
 
     def reply_load_spool(self, path: str, success: bool, identity=None):
         """Send a reply for load_spool request."""
@@ -220,7 +207,7 @@ class Zapi(ZapiBase):
                 json.dumps(kwargs).encode('utf-8')
             ]
             self.__router_socket.dispatch(reply_parts)
-            self.__console.info(f"[ZApi] Sent reply for {path}: {success}")
+            self.__console.info(f"[ZAPI_VIEWERVEDO] Sent reply for {path}: {success}")
 
     # ----------------------------------------------------------------
     # Utility

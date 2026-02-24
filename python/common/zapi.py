@@ -6,7 +6,7 @@ Provides common definitions and helper functions for system-level signaling
 import json
 from common.zpipe import AsyncZSocket
 
-class ZapiBase:
+class ZAPIBase:
     def __init__(self):
         pass
 
@@ -24,12 +24,7 @@ class ZapiBase:
             bool: True if dispatched successfully
         """
         try:
-            if socket:
-                # Construct multipart message: [socket_name, function, json_kwargs]
-                # socket_name is used to identify the sender or context if needed, 
-                # but typically the receiver might need to know who sent it or just the function.
-                # The user request said: "socket_name, function 이름, kwargs로 되는 dictionary를 multipart로 보내는 역할"
-                
+            if socket:                
                 socket_name = socket.socket_id
                 
                 parts = [

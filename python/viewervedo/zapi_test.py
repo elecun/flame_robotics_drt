@@ -18,10 +18,10 @@ ROOT_PATH = pathlib.Path(__file__).parent.parent
 sys.path.append(ROOT_PATH.as_posix())
 
 from common.zpipe import zpipe_create_pipe, zpipe_destroy_pipe, AsyncZSocket
-from common.zapi import ZapiBase
+from common.zapi import ZAPIBase
 from util.logger.console import ConsoleLogger
 
-class ConfigurableZapi(ZapiBase):
+class ConfigurableZapi(ZAPIBase):
     pass
 
 def test_zapi():
@@ -32,8 +32,8 @@ def test_zapi():
     zpipe = zpipe_create_pipe()
 
     # 2. Create DEALER socket
-    # Note: Viewervedo Zapi (Router) binds to port 9001 (default)
-    # So Dealer must connect to localhost:9001
+    # Note: Viewervedo Zapi (Router) uses IPC
+    # So Dealer must connect to /tmp/viewervedo
     dealer = AsyncZSocket("TestDealer", "dealer")
     
     if not dealer.create(pipeline=zpipe):
@@ -44,11 +44,11 @@ def test_zapi():
     # In AsyncZSocket/zmq, if we don't set identity explicitly, it's auto-generated.
     # Dealer pattern handles it.
 
-    if not dealer.join("tcp", "localhost", 9001):
+    if not dealer.join("ipc", "/tmp/viewervedo"):
         console.error("Failed to connect to Viewervedo")
         return
 
-    console.info("Connected to Viewervedo on tcp://*:9001")
+    console.info("Connected to Viewervedo on ipc:///tmp/viewervedo")
 
     # Queue for received messages
     received_msgs = []
@@ -61,7 +61,7 @@ def test_zapi():
 
     dealer.set_message_callback(on_message)
 
-    # Instantiate ZapiBase to use call method
+    # Instantiate ZAPIBase to use call method
     zapi = ConfigurableZapi()
 
     # Allow connection time

@@ -242,14 +242,6 @@ class Open3DVisualizer:
             if len(multipart_data) >= 2:
                 topic = multipart_data[0]
                 msg = multipart_data[1]
-                
-                # CHECK FOR SYSTEM TERMINATION
-                if zapi.zapi_check_system_message(topic, msg):
-                    self.__console.warning("Received TERMINATION signal")
-                    self._should_close = True
-                    # Need to trigger quit from main thread
-                    gui.Application.instance.post_to_main_thread(self.window, lambda: self.app.quit())
-                    return
 
                 with self._message_lock:
                     # Check if queue is full

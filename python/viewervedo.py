@@ -10,7 +10,7 @@ import argparse
 
 from util.logger.console import ConsoleLogger
 from viewervedo.visualizer import Visualizer
-from viewervedo.zapi import Zapi
+from viewervedo.zapi import ZAPI
 from common.zpipe import zpipe_create_pipe, zpipe_destroy_pipe
 from common.zpipe import ZPipe
 
@@ -46,11 +46,10 @@ if __name__ == "__main__":
             n_ctx_value = configure.get("n_io_context", 10)
             zpipe_instance = zpipe_create_pipe(io_threads=n_ctx_value)
 
-            # create visualizer (rendering only)
-            viewer = Visualizer(config=configure)
-
             # create zapi (communication layer)
-            zapi = Zapi(config=configure, zpipe=zpipe_instance, visualizer=viewer)
+            zapi_config = configure.get("zapi", {})
+            viewer = Visualizer(config=configure)
+            zapi = ZAPI(config=zapi_config, zpipe=zpipe_instance, visualizer=viewer)
             viewer.set_zapi(zapi)
             zapi.run()
 

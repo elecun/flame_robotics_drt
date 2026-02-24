@@ -36,7 +36,7 @@
       <x>10</x>
       <y>5</y>
       <width>336</width>
-      <height>536</height>
+      <height>286</height>
      </rect>
     </property>
     <property name="title">
@@ -170,6 +170,32 @@
       <height>476</height>
      </rect>
     </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>300</y>
+      <width>336</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Test</string>
+    </property>
+    <widget class="QPushButton" name="btn_test_async_zapi_request">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>30</y>
+       <width>176</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Async ZAPI Request</string>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
