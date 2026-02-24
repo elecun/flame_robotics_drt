@@ -258,6 +258,13 @@ class Visualizer:
                             if hasattr(self, 'zapi') and self.zapi:
                                 identity = request_data.get("_identity")
                                 self.zapi.reply_load_spool(path, False, identity=identity)
+                elif command == "load_test_weld_point":
+                    path = request_data.get("path")
+                    if path:
+                        self.__console.info(f"Loading Test Weld Point from CSV: {path}")
+                        # We will log it for now. Actual rendering can be implemented based on CSV format.
+                        # Can be implemented further as needed.
+                        self.__console.info(f"Successfully handled test weld point CSV path: {path}")
             
             # Legacy/Raw handling (list/tuple)
             elif isinstance(request_data, (list, tuple)) and len(request_data) >= 2:

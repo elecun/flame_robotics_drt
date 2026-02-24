@@ -125,10 +125,11 @@ class AppWindow(QMainWindow):
                     self.__console.error(f"Error processing category {category['name']}: {e}")
                     self.__console.error(traceback.format_exc())
 
-        # 3. Load Pipe Spool Samples
+        # 3. Load Pipe Spool Samples and Test Weld Points
+        sample_path = pathlib.Path(self.__config.get("root_path", "")) / "sample"
+        
         if hasattr(self, 'cbx_pipe_spool'):
             self.cbx_pipe_spool.clear()
-            sample_path = pathlib.Path(self.__config.get("root_path", "")) / "sample"
             if sample_path.exists():
                 for file_path in sample_path.iterdir():
                     if file_path.suffix.lower() in ['.pcd', '.ply']:
@@ -136,11 +137,20 @@ class AppWindow(QMainWindow):
             else:
                 self.__console.warning(f"Sample directory not found: {sample_path}")
 
+        if hasattr(self, 'cbx_test_weld_point'):
+            self.cbx_test_weld_point.clear()
+            if sample_path.exists():
+                # Add a default blank item if you want, or just add all csv
+                for file_path in sample_path.iterdir():
+                    if file_path.suffix.lower() == '.csv':
+                        self.cbx_test_weld_point.addItem(file_path.name)
 
     def __connect_signals(self):
         """Connect UI signals"""
         if hasattr(self, 'btn_load_spool'):
             self.btn_load_spool.clicked.connect(self.__on_btn_load_spool_clicked)
+        if hasattr(self, 'btn_load_test_weld_point'):
+            self.btn_load_test_weld_point.clicked.connect(self.__on_btn_load_test_weld_point_clicked)
         if hasattr(self, 'btn_test_async_zapi_request'):
             self.btn_test_async_zapi_request.clicked.connect(self.on_btn_test_async_zapi_request_clicked)
 
@@ -169,6 +179,28 @@ class AppWindow(QMainWindow):
                     self.__console.error(f"Spool file not found: {sample_path}")
         except Exception as e:
             self.__console.error(f"Error loading spool: {e}")
+
+    def __on_btn_load_test_weld_point_clicked(self):
+        """Handle Load Test Weld Point button click"""
+        try:
+            if hasattr(self, 'cbx_test_weld_point'):
+                current_text = self.cbx_test_weld_point.currentText()
+                if not current_text:
+                    self.__console.warning("No test weld point file selected")
+                    return
+                
+                # Resolve full path
+                sample_path = pathlib.Path(self.__config.get("root_path", "")) / "sample" / current_text
+                if sample_path.exists():
+                    if self.zapi:
+                        self.zapi._ZAPI_request_load_test_weld_point(str(sample_path.absolute()))
+                        self.__console.info(f"Requested to load test weld point: {current_text}")
+                    else:
+                        self.__console.error("ZAPI instance not available")
+                else:
+                    self.__console.error(f"Test weld point file not found: {sample_path}")
+        except Exception as e:
+            self.__console.error(f"Error loading test weld point: {e}")
 
     def _handle_message(self, topic, msg):
         """Handle incoming ZMQ messages"""

@@ -92,3 +92,15 @@ class ZAPI(QObject, ZAPIBase):
             self.__console.info(f"[ZAPI] Sent load_spool request: {file_path}")
         else:
             self.__console.warning("[ZAPI] Cannot send load_spool: Socket not connected")
+
+    def _ZAPI_request_load_test_weld_point(self, file_path: str):
+        """Sends command to load test weld points."""
+        if self.__dealer_socket and self.__dealer_socket.is_joined:
+            kwargs = {
+                "path": file_path
+            }
+            # Use ZAPIBase.call
+            self.call(self.__dealer_socket, "zapi_load_test_weld_point", kwargs)
+            self.__console.info(f"[ZAPI] Sent load_test_weld_point request: {file_path}")
+        else:
+            self.__console.warning("[ZAPI] Cannot send load_test_weld_point: Socket not connected")

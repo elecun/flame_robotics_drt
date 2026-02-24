@@ -209,6 +209,21 @@ class ZAPI(ZAPIBase):
             self.__router_socket.dispatch(reply_parts)
             self.__console.info(f"[ZAPI_VIEWERVEDO] Sent reply for {path}: {success}")
 
+    def zapi_load_test_weld_point(self, kwargs=None):
+        """Handle load_test_weld_point request."""
+        self.__console.info(f"Received zapi_load_test_weld_point with kwargs: {kwargs}")
+        if kwargs and "path" in kwargs:
+            self.__console.info(f"[ZAPI_VIEWERVEDO] Processing load_test_weld_point: {kwargs['path']}")
+            
+            if self._visualizer:
+                request_payload = kwargs.copy()
+                request_payload["command"] = "load_test_weld_point"
+                self._visualizer.push_request(request_payload)
+            else:
+                self.push_to_queue(kwargs)
+        else:
+            self.__console.warning("[ZAPI_VIEWERVEDO] Received load_test_weld_point request without path")
+
     # ----------------------------------------------------------------
     # Utility
     # ----------------------------------------------------------------
