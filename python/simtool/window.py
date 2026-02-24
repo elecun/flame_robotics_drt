@@ -178,8 +178,6 @@ class AppWindow(QMainWindow):
                 topic = topic.decode('utf-8')
             if isinstance(msg, bytes):
                 msg = msg.decode('utf-8')
-            
-
 
             if topic == "call":
                 try:

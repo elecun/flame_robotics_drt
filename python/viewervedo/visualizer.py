@@ -235,7 +235,12 @@ class Visualizer:
                         try:
                             mesh = vedo.load(path)
                             if mesh:
+                                # Remove previously loaded spool if it exists
+                                if hasattr(self, '_loaded_spool_mesh') and self._loaded_spool_mesh:
+                                    self.plotter.remove(self._loaded_spool_mesh)
+                                
                                 self.plotter.add(mesh)
+                                self._loaded_spool_mesh = mesh # Track the currently loaded spool
                                 self.plotter.render()
                                 self.__console.info(f"Successfully loaded {path}")
                                 
@@ -251,7 +256,8 @@ class Visualizer:
                         except Exception as e:
                             self.__console.error(f"Exception loading mesh: {e}")
                             if hasattr(self, 'zapi') and self.zapi:
-                                self.zapi.reply_load_spool(path, False)
+                                identity = request_data.get("_identity")
+                                self.zapi.reply_load_spool(path, False, identity=identity)
             
             # Legacy/Raw handling (list/tuple)
             elif isinstance(request_data, (list, tuple)) and len(request_data) >= 2:
