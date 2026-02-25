@@ -60,7 +60,8 @@ class Visualizer:
         self.target_frequency_hz = 60
         self.fps_text = None
 
-        if config.get("show_fps", False):
+        display_options = config.get("display_options", {})
+        if display_options.get("show_fps", False):
             self.fps_text = vedo.Text2D("FPS: 0.0", pos='top-left', s=1.0, c="black", bg="white", alpha=0.5)
             self.plotter.add(self.fps_text)
 
@@ -69,7 +70,8 @@ class Visualizer:
 
     def _setup_c_space(self, config: dict):
         """Add C-Space bounding box and axes to the plotter."""
-        if not config.get("show_c_space", False):
+        display_options = config.get("display_options", {})
+        if not display_options.get("show_c_space", False):
             return
 
         self.c_bounds = config.get("c_space_bound", [5.0, 8.0, 5.0])
@@ -98,9 +100,6 @@ class Visualizer:
 
     def _setup_robots(self, config: dict):
         """Load robot URDF models and add their meshes to the plotter."""
-        if not config.get("show_robot", False):
-            return
-
         robot_actors = load_robots_from_config(config)
         if robot_actors:
             self.plotter.add(*robot_actors)
@@ -235,7 +234,6 @@ class Visualizer:
                         try:
                             mesh = vedo.load(path)
                             if mesh:
-                                # Remove previously loaded spool if it exists
                                 if hasattr(self, '_loaded_spool_mesh') and self._loaded_spool_mesh:
                                     self.plotter.remove(self._loaded_spool_mesh)
                                 

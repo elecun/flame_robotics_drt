@@ -113,7 +113,7 @@ class AppWindow(QMainWindow):
                                 for name, obj in inspect.getmembers(module):
                                     if inspect.isclass(obj) and issubclass(obj, category["base_class"]): 
                                         if obj is not category["base_class"]:
-                                            self.__console.info(f"Found plugin class: {obj.__name__}") # LOG INFO
+                                            self.__console.debug(f"Found plugin class: {obj.__name__}")
                                             combobox.addItem(obj.__name__)
                             except Exception as e:
                                 self.__console.error(f"Failed to load {category['name']} plugin {module_name}: {e}")

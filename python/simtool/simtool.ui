@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>842</width>
-    <height>570</height>
+    <height>740</height>
    </rect>
   </property>
   <property name="font">
@@ -207,29 +207,55 @@
      </rect>
     </property>
    </widget>
-   <widget class="QGroupBox" name="groupBox">
+   <widget class="QGroupBox" name="groupBox_3">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>375</y>
+      <y>360</y>
       <width>336</width>
-      <height>121</height>
+      <height>346</height>
      </rect>
     </property>
     <property name="title">
-     <string>Test</string>
+     <string>Display Options</string>
     </property>
-    <widget class="QPushButton" name="btn_test_async_zapi_request">
+    <widget class="QCheckBox" name="chk_show_positioner_rotation_axis">
      <property name="geometry">
       <rect>
-       <x>5</x>
-       <y>85</y>
-       <width>176</width>
-       <height>32</height>
+       <x>10</x>
+       <y>30</y>
+       <width>301</width>
+       <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>Async ZAPI Request</string>
+      <string>Show Positioner Rotation Axis</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chk_show_fps">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>55</y>
+       <width>301</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show FPS</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chk_show_c_space">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>301</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show C Space</string>
      </property>
     </widget>
    </widget>

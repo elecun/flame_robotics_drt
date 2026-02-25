@@ -85,6 +85,13 @@ class ZAPI(ZAPIBase):
         """
         self.__console.info("-------------")
         try:
+            # Check for PROBE_ROUTER connection event (identity + empty message)
+            if len(multipart_data) == 2 and len(multipart_data[1]) == 0:
+                identity = multipart_data[0]
+                self.__console.info(f"[ZAPI_VIEWERVEDO] Client connected: {identity}")
+                self._send_display_options(identity)
+                return
+
             if len(multipart_data) < 4:
                 # Minimum expected for ROUTER receiving from ZAPIBase.call:
                 # [identity, socket_name, function, json_kwargs] = 4 parts
@@ -105,6 +112,22 @@ class ZAPI(ZAPIBase):
 
         except Exception as e:
             self.__console.error(f"[ZAPI_VIEWERVEDO] Error processing message: {e}")
+
+    def _send_display_options(self, identity):
+        """Send current display options to the newly connected client."""
+        display_options = self._config.get("display_options", {})
+        if self.__router_socket and self.__router_socket.is_joined:
+            socket_name = self.__router_socket.socket_id
+            function = "update_display_options"
+            
+            reply_parts = [
+                identity,
+                socket_name.encode('utf-8'),
+                function.encode('utf-8'),
+                json.dumps(display_options).encode('utf-8')
+            ]
+            self.__router_socket.dispatch(reply_parts)
+            self.__console.info(f"[ZAPI_VIEWERVEDO] Sent display_options to client {identity}")
 
     def _dispatch_message(self, identity, function_name, json_kwargs):
         """Route incoming messages to the appropriate zapi_* handler.
