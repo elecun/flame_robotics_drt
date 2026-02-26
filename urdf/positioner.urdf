@@ -39,4 +39,37 @@
     <origin rpy="0 0 0" xyz="0 0 0" />
   </joint>
   -->
+
+  <!-- 
+       Column X Link
+       Moves along the x-axis.
+  -->
+  <link name="column_x">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/visual/column_x.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/collision/column_x.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- 
+       Prismatic joint for column_x
+       Movement range: 0 ~ 8500 mm (0.0 ~ 8.5 m)
+  -->
+  <joint name="base_to_column_x" type="prismatic">
+    <parent link="base_link" />
+    <child link="column_x" />
+    <!-- 특정 옵셋만큼 떨어진 위치 (현재 0 0 0으로 설정, 필요시 수정) -->
+    <origin rpy="0 0 0" xyz="7.907 1.377 0.328" />
+    <axis xyz="1 0 0" />
+    <limit effort="1000.0" lower="0.0" upper="8.5" velocity="1.0" />
+  </joint>
+
 </robot>
