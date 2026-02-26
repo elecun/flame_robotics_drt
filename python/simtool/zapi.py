@@ -104,3 +104,14 @@ class ZAPI(QObject, ZAPIBase):
             self.__console.info(f"[ZAPI] Sent load_test_weld_point request: {file_path}")
         else:
             self.__console.warning("[ZAPI] Cannot send load_test_weld_point: Socket not connected")
+
+    def _ZAPI_request_set_mode(self, mode: str):
+        """Sends command to set execution mode (simulation or real)."""
+        if self.__dealer_socket and self.__dealer_socket.is_joined:
+            kwargs = {
+                "mode": mode
+            }
+            self.call(self.__dealer_socket, "zapi_set_mode", kwargs)
+            self.__console.info(f"[ZAPI] Sent set_mode request: {mode}")
+        else:
+            self.__console.warning("[ZAPI] Cannot send set_mode: Socket not connected")

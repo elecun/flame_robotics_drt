@@ -39,6 +39,8 @@ class ZAPI(ZAPIBase):
         # visualizer polls from it each frame
         self.request_queue = deque(maxlen=100)
         self._queue_lock = threading.Lock()
+        
+        self._current_mode = "simulation"
 
         # Router Socket (receive data + system commands) ---
         self.__router_socket = AsyncZSocket("ZAPI_VIEWERVEDO", "router")
@@ -89,7 +91,7 @@ class ZAPI(ZAPIBase):
             if len(multipart_data) == 2 and len(multipart_data[1]) == 0:
                 identity = multipart_data[0]
                 self.__console.info(f"[ZAPI_VIEWERVEDO] Client connected: {identity}")
-                self._send_display_options(identity)
+                self._send_state_info(identity)
                 return
 
             if len(multipart_data) < 4:
@@ -113,21 +115,24 @@ class ZAPI(ZAPIBase):
         except Exception as e:
             self.__console.error(f"[ZAPI_VIEWERVEDO] Error processing message: {e}")
 
-    def _send_display_options(self, identity):
-        """Send current display options to the newly connected client."""
-        display_options = self._config.get("display_options", {})
+    def _send_state_info(self, identity):
+        """Send current state information to the newly connected client."""
+        state_info = {
+            "display_options": self._config.get("display_options", {}),
+            "mode": getattr(self, "_current_mode", "simulation")
+        }
         if self.__router_socket and self.__router_socket.is_joined:
             socket_name = self.__router_socket.socket_id
-            function = "update_display_options"
+            function = "update_state_info"
             
             reply_parts = [
                 identity,
                 socket_name.encode('utf-8'),
                 function.encode('utf-8'),
-                json.dumps(display_options).encode('utf-8')
+                json.dumps(state_info).encode('utf-8')
             ]
             self.__router_socket.dispatch(reply_parts)
-            self.__console.info(f"[ZAPI_VIEWERVEDO] Sent display_options to client {identity}")
+            self.__console.info(f"[ZAPI_VIEWERVEDO] Sent state_info to client {identity}")
 
     def _dispatch_message(self, identity, function_name, json_kwargs):
         """Route incoming messages to the appropriate zapi_* handler.
@@ -246,6 +251,19 @@ class ZAPI(ZAPIBase):
                 self.push_to_queue(kwargs)
         else:
             self.__console.warning("[ZAPI_VIEWERVEDO] Received load_test_weld_point request without path")
+
+    def zapi_set_mode(self, kwargs=None):
+        """Handle set_mode request to define execution mode."""
+        self.__console.info(f"Received zapi_set_mode with kwargs: {kwargs}")
+        if kwargs and "mode" in kwargs:
+            mode = kwargs["mode"]
+            if mode in ["simulation", "real"]:
+                self.__console.info(f"[ZAPI_VIEWERVEDO] Setting execution mode to: {mode}")
+                self._current_mode = mode
+            else:
+                self.__console.warning(f"[ZAPI_VIEWERVEDO] Invalid mode received: {mode}")
+        else:
+            self.__console.warning("[ZAPI_VIEWERVEDO] Received set_mode request without mode parameter")
 
     # ----------------------------------------------------------------
     # Utility

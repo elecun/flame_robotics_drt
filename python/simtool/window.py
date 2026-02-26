@@ -153,6 +153,23 @@ class AppWindow(QMainWindow):
             self.btn_load_test_weld_point.clicked.connect(self.__on_btn_load_test_weld_point_clicked)
         if hasattr(self, 'btn_test_async_zapi_request'):
             self.btn_test_async_zapi_request.clicked.connect(self.on_btn_test_async_zapi_request_clicked)
+            
+        if hasattr(self, 'radio_mode_simulation'):
+            self.radio_mode_simulation.toggled.connect(self.__on_radio_mode_toggled)
+        if hasattr(self, 'radio_mode_real'):
+            self.radio_mode_real.toggled.connect(self.__on_radio_mode_toggled)
+
+    def __on_radio_mode_toggled(self, checked=False):
+        """Handle execution mode radio button toggle"""
+        # PyQt toggle signal emits twice: once for unchecked, once for checked
+        if not checked:
+            return
+            
+        if getattr(self, 'zapi', None):
+            if hasattr(self, 'radio_mode_simulation') and self.radio_mode_simulation.isChecked():
+                self.zapi._ZAPI_request_set_mode("simulation")
+            elif hasattr(self, 'radio_mode_real') and self.radio_mode_real.isChecked():
+                self.zapi._ZAPI_request_set_mode("real")
 
     def on_btn_test_async_zapi_request_clicked(self):
         """Handle async ZAPI test request button click"""
@@ -210,6 +227,15 @@ class AppWindow(QMainWindow):
                 topic = topic.decode('utf-8')
             if isinstance(msg, bytes):
                 msg = msg.decode('utf-8')
+
+            if topic == "update_state_info":
+                self.__console.info("Received state info from viewervedo. Sending current execution mode.")
+                if hasattr(self, 'radio_mode_simulation') and self.radio_mode_simulation.isChecked():
+                    self.zapi._ZAPI_request_set_mode("simulation")
+                elif hasattr(self, 'radio_mode_real') and self.radio_mode_real.isChecked():
+                    self.zapi._ZAPI_request_set_mode("real")
+                else:
+                    self.zapi._ZAPI_request_set_mode("simulation")
 
             if topic == "call":
                 try:
