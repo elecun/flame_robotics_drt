@@ -22,6 +22,7 @@ import inspect
 from util.logger.console import ConsoleLogger
 from plugins.pluginbase.plannerbase import PlannerBase
 from plugins.pluginbase.optimizerbase import OptimizerBase
+from simtool.param import SimParameterMap
 
 
 class AppWindow(QMainWindow):
@@ -41,6 +42,9 @@ class AppWindow(QMainWindow):
                 if os.path.isfile(ui_path):
                     loadUi(ui_path, self)
                     self.setWindowTitle(config.get("window_title", "DRT Simulation Tool"))
+
+                    # Initialize SimParameterMap for UI sync
+                    self._sim_param_map = SimParameterMap(self, self.__config, self.__console)
 
                     # Load plugins and samples
                     self.__load_plugins()
@@ -151,6 +155,8 @@ class AppWindow(QMainWindow):
             self.btn_load_spool.clicked.connect(self.__on_btn_load_spool_clicked)
         if hasattr(self, 'btn_load_test_weld_point'):
             self.btn_load_test_weld_point.clicked.connect(self.__on_btn_load_test_weld_point_clicked)
+        if hasattr(self, 'btn_load_sim_parameters'):
+            self.btn_load_sim_parameters.clicked.connect(self.__on_btn_load_sim_parameters_clicked)
         if hasattr(self, 'btn_test_async_zapi_request'):
             self.btn_test_async_zapi_request.clicked.connect(self.on_btn_test_async_zapi_request_clicked)
             
@@ -218,6 +224,21 @@ class AppWindow(QMainWindow):
                     self.__console.error(f"Test weld point file not found: {sample_path}")
         except Exception as e:
             self.__console.error(f"Error loading test weld point: {e}")
+
+    def __on_btn_load_sim_parameters_clicked(self):
+        """Handle Load Simulation Parameters button click"""
+        try:
+            file_name, _ = QFileDialog.getOpenFileName(
+                self, 
+                "Open Simulation Parameter File", 
+                str(self.__config.get("root_path", "")), 
+                "JSON Files (*.json)"
+            )
+            
+            if file_name:
+                self._sim_param_map.load_parameters(file_name)
+        except Exception as e:
+            self.__console.error(f"Error loading simulation parameters: {e}")
 
     def _handle_message(self, topic, msg):
         """Handle incoming ZMQ messages"""
