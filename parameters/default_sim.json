@@ -1,0 +1,8 @@
+{
+    "positioner_x_resolution":0.01,
+    "positioner_z_resolution":0.01,
+    "positioner_r_resolution":0.1,
+    "positioner_x_range": [0.0, 8.0],
+    "positioner_z_range": [0.0, 3.0],
+    "positioner_r_range": [0.0, 360.0]
+}
