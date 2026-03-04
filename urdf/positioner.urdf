@@ -40,36 +40,120 @@
   </joint>
   -->
 
-  <!-- 
-       Column X Link
-       Moves along the x-axis.
-  -->
-  <link name="column_x">
+  <!-- ============================================================
+       f_column_z: base에서 z축으로 이동하는 prismatic joint
+       m_column_z와 항상 동기화되어 동일한 z축 위치를 유지합니다.
+       (동기화 로직은 kinematics 소프트웨어 레이어에서 구현 필요)
+       ============================================================ -->
+  <link name="f_column_z">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0" />
       <geometry>
-        <mesh filename="meshes/positioner/visual/column_x.dae"/>
+        <mesh filename="meshes/positioner/visual/f_column_z.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0" />
       <geometry>
-        <mesh filename="meshes/positioner/collision/column_x.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="meshes/positioner/collision/f_column_z.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
   </link>
 
-  <!-- 
-       Prismatic joint for column_x
-       Movement range: 0 ~ 8500 mm (0.0 ~ 8.5 m)
-  -->
-  <joint name="base_to_column_x" type="prismatic">
+  <joint name="base_to_f_column_z" type="prismatic">
     <parent link="base_link" />
-    <child link="column_x" />
-    <!-- 특정 옵셋만큼 떨어진 위치 (현재 0 0 0으로 설정, 필요시 수정) -->
+    <child link="f_column_z" />
+    <!-- SYNC: 이 조인트는 m_column_to_m_column_z와 동기화됩니다 (동일 z축 위치) -->
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit effort="1000.0" lower="0.0" upper="3.0" velocity="1.0" />
+  </joint>
+
+  <!-- ============================================================
+       m_column: 수동으로 조작되는 prismatic joint (x축 이동)
+       Kinematics 해석 시 이 조인트의 구동값은 사용자가 입력한 값을
+       계속 유지해야 합니다 (수동 조작 조인트).
+       Movement range: 0 ~ 8500 mm (0.0 ~ 8.5 m)
+       ============================================================ -->
+  <link name="m_column">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/visual/m_column.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/collision/m_column.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- MANUAL JOINT: 수동 조작 조인트 - kinematics 해석 시 사용자 입력값 유지 -->
+  <joint name="base_to_m_column" type="prismatic">
+    <parent link="base_link" />
+    <child link="m_column" />
+    <!-- 특정 옵셋만큼 떨어진 위치 (필요시 수정) -->
     <origin rpy="0 0 0" xyz="7.907 1.377 0.328" />
     <axis xyz="1 0 0" />
     <limit effort="1000.0" lower="0.0" upper="8.5" velocity="1.0" />
+  </joint>
+
+  <!-- ============================================================
+       m_column_z: m_column에서 z축으로 이동하는 prismatic joint
+       f_column_z와 항상 동기화되어 동일한 z축 위치를 유지합니다.
+       (동기화 로직은 kinematics 소프트웨어 레이어에서 구현 필요)
+       ============================================================ -->
+  <link name="m_column_z">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/visual/m_column_z.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/collision/m_column_z.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- SYNC: 이 조인트는 base_to_f_column_z와 동기화됩니다 (동일 z축 위치) -->
+  <joint name="m_column_to_m_column_z" type="prismatic">
+    <parent link="m_column" />
+    <child link="m_column_z" />
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit effort="1000.0" lower="0.0" upper="3.0" velocity="1.0" />
+  </joint>
+  <!-- ============================================================
+       m_column_passive_r: m_column_z 하위의 revolute joint
+       수동으로 조작하는 조인트로 사용자가 입력하는 값에만 대응합니다.
+       ============================================================ -->
+  <link name="m_column_passive_r">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/visual/m_column_passive_r.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/collision/m_column_passive_r.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- MANUAL JOINT: 수동 조작 조인트 - kinematics 해석 시 사용자 입력값 대응 -->
+  <joint name="m_column_z_to_m_column_passive_r" type="revolute">
+    <parent link="m_column_z" />
+    <child link="m_column_passive_r" />
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <axis xyz="0 0 1" /> <!-- 회전축은 필요시 수정 -->
+    <limit effort="1000.0" lower="-3.14159" upper="3.14159" velocity="1.0" />
   </joint>
 
 </robot>
