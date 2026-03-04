@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>1365</width>
-    <height>829</height>
+    <height>974</height>
    </rect>
   </property>
   <property name="font">
@@ -1022,13 +1022,26 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>30</y>
-       <width>196</width>
-       <height>32</height>
+       <y>70</y>
+       <width>316</width>
+       <height>36</height>
       </rect>
      </property>
      <property name="text">
       <string>Start Simulation</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_load_sim_parameters">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>316</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Load &amp;&amp; Apply Sim Parameters</string>
      </property>
     </widget>
    </widget>
