@@ -4,13 +4,46 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="dda_rb10_1300e">
+  <link name="dda_link_base_x">
+    <visual>
+      <origin xyz="4.25 0 0.1" rpy="0 0 0" />
+      <geometry>
+        <box size="8.5 0.4 0.2" />
+      </geometry>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="4.25 0 0.1" rpy="0 0 0" />
+      <geometry>
+        <box size="8.5 0.4 0.2" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="4.25 0 0.1" rpy="0 0 0" />
+      <mass value="100.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+    </inertial>
+  </link>
+
+  <joint name="dda_joint_base_x" type="prismatic">
+    <parent link="dda_link_base_x" />
+    <child link="dda_link0" />
+    <origin xyz="0 0 0.2" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="0.0" upper="8.5" effort="1000.0" velocity="1.0" />
+  </joint>
+
   <link name="dda_link0">
     <visual>
+      <origin xyz="0 0 0" rpy="0 0 1.57079632679" />
       <geometry>
         <mesh filename="meshes/rb10_1300e/visual/link0.dae" />
       </geometry>
     </visual>
     <collision>
+      <origin xyz="0 0 0" rpy="0 0 1.57079632679" />
       <geometry>
         <mesh filename="meshes/rb10_1300e/collision/link0.stl" />
       </geometry>
@@ -148,7 +181,7 @@
   </link>
   <link name="dda_link_tcp" />
   <joint name="dda_joint_base" type="revolute">
-    <origin rpy="0 0 0" xyz="0 0 0" />
+    <origin rpy="0 0 1.57079632679" xyz="0 0 0" />
     <parent link="dda_link0" />
     <child link="dda_link1" />
     <axis xyz="0 0 1" />
