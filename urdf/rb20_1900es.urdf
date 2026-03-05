@@ -118,6 +118,28 @@
       <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
     </inertial>
   </link>
+  <link name="link_end">
+    <inertial>
+      <origin xyz="4.07134260806985e-05 -0.14311080297190015 2.6070581174467356e-05" rpy="0 0 0" />
+      <mass value="33.803183177691814" />
+      <inertia ixx="0.150633" iyy="0.230106" izz="0.339619" ixy="0.000105" iyz="-2.9e-05" ixz="-1.1e-05" />
+    </inertial>
+    <visual>
+      <origin xyz="-0.0 0.1163 -0.0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/link_rt.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+      <material name="yellow">
+        <color rgba="0.9 0.9 0.1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0 0.1163 -0.0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/link_rt.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+  </link>
   <link name="tcp"/>
   <joint name="base" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0.241"/>
@@ -160,6 +182,11 @@
     <child link="link6"/>
     <axis xyz="0 0 1"/>
     <limit effort="10" lower="-3.14" upper="3.14" velocity="3.14"/>
+  </joint>
+  <joint name="joint_end" type="fixed">
+    <origin xyz="0.0 0.0 0.13" rpy="-1.57 0 0" />
+    <parent link="link6" />
+    <child link="link_end" />
   </joint>
   <joint name="tcp_joint" type="fixed">
     <origin rpy="0 0 0" xyz="0 -0.1153 0"/>
@@ -226,5 +253,6 @@
       <state_interface name="position"/>
       <state_interface name="effort"/>
     </joint>
+    
   </ros2_control>
 </robot>
