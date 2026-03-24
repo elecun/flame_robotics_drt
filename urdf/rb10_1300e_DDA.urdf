@@ -4,35 +4,66 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="dda_rb10_1300e">
-  <link name="dda_link_base_x">
+  <link name="dda_link_linear_track">
     <visual>
-      <origin xyz="4.25 0 0.1" rpy="0 0 0" />
+      <origin xyz="4.15 0 0.1" rpy="0 0 0" />
       <geometry>
-        <box size="8.5 0.4 0.2" />
+        <box size="8.3 0.4 0.2" />
       </geometry>
-      <material name="gray">
-        <color rgba="0.5 0.5 0.5 1"/>
+      <material name="color_darkgray">
+        <color rgba="0.1 0.1 0.1 1"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="4.25 0 0.1" rpy="0 0 0" />
+      <origin xyz="4.15 0 0.1" rpy="0 0 0" />
       <geometry>
-        <box size="8.5 0.4 0.2" />
+        <box size="8.3 0.4 0.2" />
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="4.25 0 0.1" rpy="0 0 0" />
+      <origin xyz="4.15 0 0.1" rpy="0 0 0" />
       <mass value="100.0" />
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
     </inertial>
   </link>
 
-  <joint name="dda_joint_base_x" type="prismatic">
-    <parent link="dda_link_base_x" />
-    <child link="dda_link0" />
+  <joint name="dda_joint_linear_track" type="prismatic">
+    <parent link="dda_link_linear_track" />
+    <child link="dda_link_carriage" />
     <origin xyz="0 0 0.2" rpy="0 0 0" />
     <axis xyz="1 0 0" />
-    <limit lower="0.0" upper="8.5" effort="1000.0" velocity="1.0" />
+    <limit lower="0.0" upper="7.9" effort="1000.0" velocity="1.0" />
+  </joint>
+
+  <link name="dda_link_carriage">
+    <visual>
+      <origin xyz="0.2 0 0.1" rpy="0 0 0" />
+      <geometry>
+        <box size="0.4 0.7 0.2" />
+      </geometry>
+      <material name="color_darkgray">
+        <color rgba="0.1 0.1 0.1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0.25 0.05" rpy="0 0 0" />
+      <geometry>
+        <box size="0.4 0.5 0.1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0.25 0.05" rpy="0 0 0" />
+      <mass value="50.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+    </inertial>
+  </link>
+
+  <joint name="dda_joint_carriage" type="prismatic">
+    <parent link="dda_link_carriage" />
+    <child link="dda_link0" />
+    <origin xyz="0.2 0 0.2" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="0.5" effort="1000.0" velocity="1.0" />
   </joint>
 
   <link name="dda_link0">

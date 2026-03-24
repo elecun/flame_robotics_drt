@@ -47,10 +47,13 @@
        ============================================================ -->
   <link name="f_column_z">
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0" />
+      <origin rpy="0 0 0" xyz="0.26 1.375 1.3" />
       <geometry>
         <mesh filename="meshes/positioner/visual/f_column_z.dae"/>
       </geometry>
+      <material name="red_color">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0" />
@@ -66,7 +69,7 @@
     <!-- SYNC: 이 조인트는 m_column_to_m_column_z와 동기화됩니다 (동일 z축 위치) -->
     <origin rpy="0 0 0" xyz="0 0 0" />
     <axis xyz="0 0 1" />
-    <limit effort="1000.0" lower="0.0" upper="3.0" velocity="1.0" />
+    <limit effort="1000.0" lower="0.0" upper="0.85" velocity="1.0" />
   </joint>
 
   <!-- ============================================================
@@ -81,6 +84,9 @@
       <geometry>
         <mesh filename="meshes/positioner/visual/m_column.dae"/>
       </geometry>
+      <material name="green_color">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0" />
@@ -95,9 +101,9 @@
     <parent link="base_link" />
     <child link="m_column" />
     <!-- 특정 옵셋만큼 떨어진 위치 (필요시 수정) -->
-    <origin rpy="0 0 0" xyz="7.907 1.377 0.328" />
+    <origin rpy="0 0 0" xyz="8.0 1.377 0.328" />
     <axis xyz="1 0 0" />
-    <limit effort="1000.0" lower="0.0" upper="8.5" velocity="1.0" />
+    <limit effort="1000.0" lower="-4.7" upper="0.0" velocity="1.0" />
   </joint>
 
   <!-- ============================================================
@@ -107,10 +113,13 @@
        ============================================================ -->
   <link name="m_column_z">
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0" />
+      <origin rpy="0 0 0" xyz="0 0 0.885" />
       <geometry>
         <mesh filename="meshes/positioner/visual/m_column_z.dae"/>
       </geometry>
+      <material name="red_color">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0" />
@@ -126,7 +135,8 @@
     <child link="m_column_z" />
     <origin rpy="0 0 0" xyz="0 0 0" />
     <axis xyz="0 0 1" />
-    <limit effort="1000.0" lower="0.0" upper="3.0" velocity="1.0" />
+    <limit effort="1000.0" lower="0.0" upper="0.85" velocity="1.0" />
+    <mimic joint="base_to_f_column_z" multiplier="1.0" offset="0.0" />
   </joint>
   <!-- ============================================================
        m_column_passive_r: m_column_z 하위의 revolute joint
@@ -140,7 +150,7 @@
       </geometry>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0" />
+      <origin rpy="0 0 0" xyz="0.247 0 -0.885" />
       <geometry>
         <mesh filename="meshes/positioner/collision/m_column_passive_r.stl" scale="0.001 0.001 0.001"/>
       </geometry>
@@ -151,9 +161,63 @@
   <joint name="m_column_z_to_m_column_passive_r" type="revolute">
     <parent link="m_column_z" />
     <child link="m_column_passive_r" />
-    <origin rpy="0 0 0" xyz="0 0 0" />
-    <axis xyz="0 0 1" /> <!-- 회전축은 필요시 수정 -->
+    <origin rpy="0 0 0" xyz="-0.247 0 0.885" />
+    <axis xyz="1 0 0" /> <!-- 회전축은 필요시 수정 -->
     <limit effort="1000.0" lower="-3.14159" upper="3.14159" velocity="1.0" />
+  </joint>
+  <!-- ============================================================
+       f_column_r: f_column_z 하위의 revolute joint
+       ============================================================ -->
+  <link name="f_column_r">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/visual/f_column_r.dae"/>
+      </geometry>
+      <material name="purple_color">
+        <color rgba="0.5 0.0 0.5 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/collision/f_column_r.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="f_column_z_to_f_column_r" type="revolute">
+    <parent link="f_column_z" />
+    <child link="f_column_r" />
+    <origin rpy="0 0 0" xyz="0.48 1.37 1.3" />
+    <axis xyz="1 0 0" />
+    <limit effort="1000.0" lower="-3.14159" upper="3.14159" velocity="1.0" />
+  </joint>
+
+  <!-- ============================================================
+       f_column_passive_clamp: f_column_r 하위의 prismatic joint
+       ============================================================ -->
+  <link name="f_column_passive_clamp">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/visual/f_column_passive_clamp.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/positioner/collision/f_column_passive_clamp.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="f_column_r_to_f_column_passive_clamp" type="prismatic">
+    <parent link="f_column_r" />
+    <child link="f_column_passive_clamp" />
+    <origin rpy="0 0 0" xyz="0.427 0.9 0.0" />
+    <axis xyz="0 1 0" />
+    <limit effort="1000.0" lower="-0.9" upper="0.0" velocity="1.0" />
   </joint>
 
 </robot>
