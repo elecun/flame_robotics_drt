@@ -96,7 +96,11 @@ class RobotModel:
 
                     # Convert trimesh to vedo
                     actor = _trimesh_to_vedo(tm_copy, f"{self.name}_{link.name}")
-                    actor.c('steelblue').alpha(0.9)
+                    if visual.material is not None and visual.material.color is not None:
+                        rgba = visual.material.color
+                        actor.c((rgba[0], rgba[1], rgba[2])).alpha(rgba[3])
+                    else:
+                        actor.c('steelblue').alpha(0.9)
                     self.actors.append(actor)
 
         self._console.info(f"[Robot:{self.name}] Created {len(self.actors)} mesh actors")
