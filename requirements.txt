@@ -1,8 +1,15 @@
 pyqt6
 numpy
 scipy
+scikit-image
 pyzmq
 colorlog
 open3d
 vedo
+pyyaml
+opencv-python
+trimesh
+networkx
+lxml
+pycollada
 pyqtdarktheme
