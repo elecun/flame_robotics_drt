@@ -1,0 +1,3180 @@
+<?xml version="1.0" ?>
+<robot name="model" version="1.1">
+  <link name="base_link"/>
+  <link name="link_0_node">
+    <visual>
+      <origin xyz="0.3 -1.00044e-14 0.005" rpy="0 0 0"/>
+      <geometry>
+        <box size="9 4 0.01"/>
+      </geometry>
+      <material><color rgba="0.15 0.54 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.3 -1.00044e-14 0.005" rpy="0 0 0"/>
+      <geometry>
+        <box size="9 4 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_1_DDA">
+    <visual>
+      <origin xyz="-0.0998474 -0.0285894 -0.0165208" rpy="-1.5708 -2.8731e-13 -1.24921e-14"/>
+      <geometry>
+        <box size="0.3381 0.03 0.131"/>
+      </geometry>
+      <material><color rgba="0.20 0.70 0.33 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0998474 -0.0285894 -0.0165208" rpy="-1.5708 -2.8731e-13 -1.24921e-14"/>
+      <geometry>
+        <box size="0.3381 0.03 0.131"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.101347 -0.0305894 -0.0505208" rpy="-1.5708 -2.8731e-13 -1.24921e-14"/>
+      <geometry>
+        <box size="0.3 0.008 0.3"/>
+      </geometry>
+      <material><color rgba="0.20 0.70 0.33 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.101347 -0.0305894 -0.0505208" rpy="-1.5708 -2.8731e-13 -1.24921e-14"/>
+      <geometry>
+        <box size="0.3 0.008 0.3"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.0286526 -0.0305894 -0.0730123" rpy="-1.5708 -2.8731e-13 -1.24921e-14"/>
+      <geometry>
+        <box size="0.01 0.0369829 0.119966"/>
+      </geometry>
+      <material><color rgba="0.20 0.70 0.33 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0286526 -0.0305894 -0.0730123" rpy="-1.5708 -2.8731e-13 -1.24921e-14"/>
+      <geometry>
+        <box size="0.01 0.0369829 0.119966"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.231347 -0.0305894 -0.0730123" rpy="-1.5708 -2.8731e-13 -1.24921e-14"/>
+      <geometry>
+        <box size="0.01 0.0369829 0.119966"/>
+      </geometry>
+      <material><color rgba="0.20 0.70 0.33 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.231347 -0.0305894 -0.0730123" rpy="-1.5708 -2.8731e-13 -1.24921e-14"/>
+      <geometry>
+        <box size="0.01 0.0369829 0.119966"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.101347 0.115411 -0.0500208" rpy="4.40499e-16 1.5708 0"/>
+      <geometry>
+        <box size="0.015 0.018 0.3"/>
+      </geometry>
+      <material><color rgba="0.20 0.70 0.33 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.101347 0.115411 -0.0500208" rpy="4.40499e-16 1.5708 0"/>
+      <geometry>
+        <box size="0.015 0.018 0.3"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.101347 0.0816606 -0.0440208" rpy="1.5708 -1.83852e-13 1.5708"/>
+      <geometry>
+        <box size="0.0855 0.015 0.3"/>
+      </geometry>
+      <material><color rgba="0.20 0.70 0.33 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.101347 0.0816606 -0.0440208" rpy="1.5708 -1.83852e-13 1.5708"/>
+      <geometry>
+        <box size="0.0855 0.015 0.3"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.101347 -0.176589 -0.0500208" rpy="-3.14159 1.5708 0"/>
+      <geometry>
+        <box size="0.015 0.018 0.3"/>
+      </geometry>
+      <material><color rgba="0.20 0.70 0.33 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.101347 -0.176589 -0.0500208" rpy="-3.14159 1.5708 0"/>
+      <geometry>
+        <box size="0.015 0.018 0.3"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.101347 -0.142839 -0.0440208" rpy="1.5708 1.83852e-13 -1.5708"/>
+      <geometry>
+        <box size="0.0855 0.015 0.3"/>
+      </geometry>
+      <material><color rgba="0.20 0.70 0.33 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.101347 -0.142839 -0.0440208" rpy="1.5708 1.83852e-13 -1.5708"/>
+      <geometry>
+        <box size="0.0855 0.015 0.3"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_2_rail_DDA">
+    <visual>
+      <origin xyz="3.489 -9.09495e-16 -0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.489 -9.09495e-16 -0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7445 -9.09495e-16 -0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7445 -9.09495e-16 -0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="4.54747e-16 0 -0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="4.54747e-16 0 -0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7445 9.09495e-16 -0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7445 9.09495e-16 -0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-3.489 1.36424e-15 -0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-3.489 1.36424e-15 -0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.84217e-16 -2.27374e-16 0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.84217e-16 -2.27374e-16 0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7445 -4.54747e-16 0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7445 -4.54747e-16 0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-3.489 -4.54747e-16 0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-3.489 -4.54747e-16 0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7445 -1.36424e-15 0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7445 -1.36424e-15 0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.489 -1.36424e-15 0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.489 -1.36424e-15 0.01" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.489 0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.489 0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.489 -0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.489 -0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-3.489 0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-3.489 0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-3.489 -0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-3.489 -0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="4.54747e-16 0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="4.54747e-16 0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="5.68434e-16 -0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="5.68434e-16 -0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7445 0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7445 0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7445 -0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7445 -0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7445 0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7445 0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7445 -0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7445 -0.31 0.085" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7995 -0.2 0.095" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7995 -0.2 0.095" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7995 -0.2 0.095" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7995 -0.2 0.095" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7995 0.2 0.095" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7995 0.2 0.095" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7995 0.2 0.095" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7995 0.2 0.095" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-2.7 -0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-2.7 -0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.9 -0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.9 -0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.9 -0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.9 -0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.7 -0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.7 -0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-2.7 0.2225 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-2.7 0.2225 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.9 0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.9 0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.9 0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.9 0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.7 0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.7 0.2235 0.226" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.4845e-14 0.015 0.125" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="7.199 0.269 0.098"/>
+      </geometry>
+      <material><color rgba="0.96 0.61 0.12 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.4845e-14 0.015 0.125" rpy="-8.16207e-16 3.88236e-14 3.14159"/>
+      <geometry>
+        <box size="7.199 0.269 0.098"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_3_scan_body_DDA">
+    <visual>
+      <origin xyz="1.13687e-16 0.0125 0" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <box size="0.8 0.52 0.025"/>
+      </geometry>
+      <material><color rgba="0.57 0.32 0.73 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.13687e-16 0.0125 0" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <box size="0.8 0.52 0.025"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.35975 0.063 -0.025" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <box size="0.0805 0.165 0.076"/>
+      </geometry>
+      <material><color rgba="0.57 0.32 0.73 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.35975 0.063 -0.025" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <box size="0.0805 0.165 0.076"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.289 0.201 9.54969e-15" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <box size="0.226 0.3245 0.352"/>
+      </geometry>
+      <material><color rgba="0.57 0.32 0.73 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.289 0.201 9.54969e-15" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <box size="0.226 0.3245 0.352"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-3.41061e-16 0.09 -2.72848e-15" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <box size="0.33 0.16 0.102"/>
+      </geometry>
+      <material><color rgba="0.57 0.32 0.73 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-3.41061e-16 0.09 -2.72848e-15" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <box size="0.33 0.16 0.102"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.1255e-14 0.4515 0.035" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <box size="0.352 0.53 0.621"/>
+      </geometry>
+      <material><color rgba="0.57 0.32 0.73 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.1255e-14 0.4515 0.035" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <box size="0.352 0.53 0.621"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.0107325 2.63285 0.0521338" rpy="0.0054756 -0.680086 -1.5708"/>
+      <geometry>
+        <box size="0.1 0.0953271 0.145436"/>
+      </geometry>
+      <material><color rgba="0.57 0.32 0.73 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0107325 2.63285 0.0521338" rpy="0.0054756 -0.680086 -1.5708"/>
+      <geometry>
+        <box size="0.1 0.0953271 0.145436"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.0157407 2.58451 0.00994251" rpy="-3.12431 -0.680086 -1.5708"/>
+      <geometry>
+        <box size="0.0679 0.627868 0.0901768"/>
+      </geometry>
+      <material><color rgba="0.57 0.32 0.73 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0157407 2.58451 0.00994251" rpy="-3.12431 -0.680086 -1.5708"/>
+      <geometry>
+        <box size="0.0679 0.627868 0.0901768"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.000232483 0.198227 -0.307389" rpy="0.0054756 0.757225 -1.5708"/>
+      <geometry>
+        <box size="0.1 0.0953271 0.145436"/>
+      </geometry>
+      <material><color rgba="0.57 0.32 0.73 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.000232483 0.198227 -0.307389" rpy="0.0054756 0.757225 -1.5708"/>
+      <geometry>
+        <box size="0.1 0.0953271 0.145436"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.00524071 0.23361 -0.360911" rpy="-3.12431 0.757225 -1.5708"/>
+      <geometry>
+        <box size="0.0679 0.627868 0.0901768"/>
+      </geometry>
+      <material><color rgba="0.57 0.32 0.73 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.00524071 0.23361 -0.360911" rpy="-3.12431 0.757225 -1.5708"/>
+      <geometry>
+        <box size="0.0679 0.627868 0.0901768"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.673122 -0.257 -1.5" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <mesh filename="meshes/slab_0_1_1_251_59221b8b.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material><color rgba="0.57 0.32 0.73 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.673122 -0.257 -1.5" rpy="1.5708 7.88908e-15 -3.14159"/>
+      <geometry>
+        <mesh filename="meshes/slab_0_1_1_251_59221b8b.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_4_RT">
+    <visual>
+      <origin xyz="0 -0.04725 -0.1395" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.0725 0.24 0.1055"/>
+      </geometry>
+      <material><color rgba="0.09 0.68 0.70 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.04725 -0.1395" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.0725 0.24 0.1055"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.13687e-16 -2.08579e-17 -0.0135" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 0.012 0.2"/>
+      </geometry>
+      <material><color rgba="0.09 0.68 0.70 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.13687e-16 -2.08579e-17 -0.0135" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 0.012 0.2"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 1.22354e-16 0" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.12 0.015 0.12"/>
+      </geometry>
+      <material><color rgba="0.09 0.68 0.70 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 1.22354e-16 0" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.12 0.015 0.12"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.13687e-16 -0.098 -0.006" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.05 0.003 0.07"/>
+      </geometry>
+      <material><color rgba="0.09 0.68 0.70 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.13687e-16 -0.098 -0.006" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.05 0.003 0.07"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.0829994 1.43051e-09 0.0159851" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.0399988 0.0469703 0.109966"/>
+      </geometry>
+      <material><color rgba="0.09 0.68 0.70 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0829994 1.43051e-09 0.0159851" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.0399988 0.0469703 0.109966"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.0829994 -1.43051e-09 0.0159851" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.0399988 0.0469703 0.109966"/>
+      </geometry>
+      <material><color rgba="0.09 0.68 0.70 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0829994 -1.43051e-09 0.0159851" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <box size="0.0399988 0.0469703 0.109966"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.007 0.0535 -0.13485" rpy="-3.14159 1.5708 0"/>
+      <geometry>
+        <box size="0.2467 0.097 0.258"/>
+      </geometry>
+      <material><color rgba="0.09 0.68 0.70 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.007 0.0535 -0.13485" rpy="-3.14159 1.5708 0"/>
+      <geometry>
+        <box size="0.2467 0.097 0.258"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.580391 2.30659 -0.553929" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <mesh filename="meshes/slab_0_1_1_370_f63542da.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material><color rgba="0.09 0.68 0.70 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.580391 2.30659 -0.553929" rpy="-1.5708 -3.0093e-13 3.14159"/>
+      <geometry>
+        <mesh filename="meshes/slab_0_1_1_370_f63542da.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_5_positioner_base">
+    <visual>
+      <origin xyz="3.075 0.738 -0.025" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 4.154 0.15"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.075 0.738 -0.025" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 4.154 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.325 0.738 -0.025" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 4.154 0.15"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.325 0.738 -0.025" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 4.154 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.82322 0.199223 -0.025" rpy="0.785398 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.65 0.15"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.82322 0.199223 -0.025" rpy="0.785398 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.65 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.82322 1.27678 -0.025" rpy="-0.785398 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.65 0.15"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.82322 1.27678 -0.025" rpy="-0.785398 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.65 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.07322 0.199223 -0.025" rpy="2.35619 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.65 0.15"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.07322 0.199223 -0.025" rpy="2.35619 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.65 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.07322 1.27678 -0.025" rpy="-2.35619 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.65 0.15"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.07322 1.27678 -0.025" rpy="-2.35619 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.65 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.038 0.738 0.075" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.724 0.724 0.05"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.038 0.738 0.075" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.724 0.724 0.05"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-4.93 0.463 1.132" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 0.15 2.064"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-4.93 0.463 1.132" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 0.15 2.064"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-4.93 1.013 1.132" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 0.15 2.064"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-4.93 1.013 1.132" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 0.15 2.064"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-4.93 0.738 2.089" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 0.7 0.15"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-4.93 0.738 2.089" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.15 0.7 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.255 0.273 1.5" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.5 0.23 0.6"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.255 0.273 1.5" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.5 0.23 0.6"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.25326 0.722 0.24301" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.18 0.314 0.23002"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.25326 0.722 0.24301" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.18 0.314 0.23002"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-4.84 0.983 1.09125" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.03 0.09 1.5425"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-4.84 0.983 1.09125" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.03 0.09 1.5425"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-4.811 0.488 1.105" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.038 0.045 1.515"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-4.811 0.488 1.105" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.038 0.045 1.515"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-4.811 0.988 1.105" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.038 0.045 1.515"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-4.811 0.988 1.105" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.038 0.045 1.515"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-4.84 0.493 1.09125" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.03 0.09 1.5425"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-4.84 0.493 1.09125" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="0.03 0.09 1.5425"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.125 1.025 -0.025" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="8.25 0.15 0.15"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.125 1.025 -0.025" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="8.25 0.15 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.125 0.451 -0.025" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="8.25 0.15 0.15"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.125 0.451 -0.025" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="8.25 0.15 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.6075 1.037 0.065" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="5.085 0.126 0.03"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.6075 1.037 0.065" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="5.085 0.126 0.03"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.6125 1.06 0.094" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="5.02 0.045 0.038"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.6125 1.06 0.094" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="5.02 0.045 0.038"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.6125 0.416 0.094" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="5.02 0.045 0.038"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.6125 0.416 0.094" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="5.02 0.045 0.038"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.6075 0.439 0.065" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="5.085 0.126 0.03"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.6075 0.439 0.065" rpy="1.22125e-15 -1.73663e-13 3.14159"/>
+      <geometry>
+        <box size="5.085 0.126 0.03"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.22085 0.738 0.3005" rpy="1.5708 -1.9984e-15 3.14159"/>
+      <geometry>
+        <box size="0.3683 0.39 0.5"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.22085 0.738 0.3005" rpy="1.5708 -1.9984e-15 3.14159"/>
+      <geometry>
+        <box size="0.3683 0.39 0.5"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.0215 0.738 1.30485" rpy="1.5708 -1.9984e-15 3.14159"/>
+      <geometry>
+        <box size="0.03 1.6183 0.537"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.0215 0.738 1.30485" rpy="1.5708 -1.9984e-15 3.14159"/>
+      <geometry>
+        <box size="0.03 1.6183 0.537"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-4.9675 0.7355 0.188" rpy="-3.14159 6.11512e-16 -2.55757e-15"/>
+      <geometry>
+        <box size="0.275 0.19 0.176"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-4.9675 0.7355 0.188" rpy="-3.14159 6.11512e-16 -2.55757e-15"/>
+      <geometry>
+        <box size="0.275 0.19 0.176"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-4.93 0.738 1.10475" rpy="6.11512e-16 -7.90314e-16 1.5708"/>
+      <geometry>
+        <cylinder radius="0.025" length="1.6575"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-4.93 0.738 1.10475" rpy="6.11512e-16 -7.90314e-16 1.5708"/>
+      <geometry>
+        <cylinder radius="0.025" length="1.6575"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.07501 -0.0369701 -0.122134" rpy="-3.13957 -1.97215e-31 1.56998"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.07501 -0.0369701 -0.122134" rpy="-3.13957 -1.97215e-31 1.56998"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.075 1.51303 -0.122134" rpy="-3.13957 -1.59536e-15 1.96307"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.075 1.51303 -0.122134" rpy="-3.13957 -1.59536e-15 1.96307"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.32499 1.51303 -0.122134" rpy="-3.13957 -1.19479e-15 1.56998"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.32499 1.51303 -0.122134" rpy="-3.13957 -1.19479e-15 1.56998"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.125 1.02503 -0.122134" rpy="-3.13957 0 1.96307"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.125 1.02503 -0.122134" rpy="-3.13957 0 1.96307"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.12499 0.45103 -0.122134" rpy="-3.13957 -2.20049e-16 1.56998"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.12499 0.45103 -0.122134" rpy="-3.13957 -2.20049e-16 1.56998"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.325 -0.0369686 -0.122134" rpy="-3.13957 -1.56207e-15 1.96307"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.325 -0.0369686 -0.122134" rpy="-3.13957 -1.56207e-15 1.96307"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.325 2.73703 -0.091534" rpy="-3.13957 -1.95612e-15 1.96307"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.325 2.73703 -0.091534" rpy="-3.13957 -1.95612e-15 1.96307"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-5.32499 -1.26097 -0.122134" rpy="-3.13957 1.22025e-15 1.56998"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.32499 -1.26097 -0.122134" rpy="-3.13957 1.22025e-15 1.56998"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.075 -1.26097 -0.122134" rpy="-3.13957 1.59536e-15 1.96307"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.075 -1.26097 -0.122134" rpy="-3.13957 1.59536e-15 1.96307"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.07501 2.73703 -0.122134" rpy="-3.13957 -1.22315e-15 1.56998"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+      <material><color rgba="0.90 0.35 0.56 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.07501 2.73703 -0.122134" rpy="-3.13957 -1.22315e-15 1.56998"/>
+      <geometry>
+        <cylinder radius="0.0391328" length="0.143093"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_6_rail_RT">
+    <visual>
+      <origin xyz="-2.7 -0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-2.7 -0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.9 -0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.9 -0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.9 -0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.9 -0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.7 -0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.7 -0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-2.7 0.2225 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-2.7 0.2225 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.9 0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.9 0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.9 0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.9 0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.7 0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.7 0.2235 0.226" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.799 0.113 0.152"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7995 -0.2 0.095" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7995 -0.2 0.095" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7995 -0.2 0.095" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7995 -0.2 0.095" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7995 0.2 0.095" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7995 0.2 0.095" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7995 0.2 0.095" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7995 0.2 0.095" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="3.599 0.1 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.67225 0.015 0.125" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.8545 0.269 0.098"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.67225 0.015 0.125" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.8545 0.269 0.098"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-2.67225 0.015 0.125" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.8545 0.269 0.098"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-2.67225 0.015 0.125" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.8545 0.269 0.098"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.87225 0.015 0.125" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.7435 0.269 0.098"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.87225 0.015 0.125" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.7435 0.269 0.098"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.87225 0.015 0.125" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.7435 0.269 0.098"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.87225 0.015 0.125" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="1.7435 0.269 0.098"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.18803e-14 9.09495e-16 0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.18803e-14 9.09495e-16 0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7445 4.54747e-16 0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7445 4.54747e-16 0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-3.489 0 0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-3.489 0 0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7445 2.27374e-16 0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7445 2.27374e-16 0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.489 6.82121e-16 0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.489 6.82121e-16 0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 0.9 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.489 -9.09495e-16 -0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.489 -9.09495e-16 -0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7445 -9.09495e-16 -0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7445 -9.09495e-16 -0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="5.11591e-16 0 -0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="5.11591e-16 0 -0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7445 9.09495e-16 -0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7445 9.09495e-16 -0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-3.489 1.36424e-15 -0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-3.489 1.36424e-15 -0.01" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.2 1.1 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.489 0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.489 0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="3.489 -0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.489 -0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-3.489 0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-3.489 0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-3.489 -0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-3.489 -0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.1994e-14 0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.1994e-14 0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.22213e-14 -0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.22213e-14 -0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7445 0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7445 0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.7445 -0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.7445 -0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7445 0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7445 0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.7445 -0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+      <material><color rgba="0.48 0.55 0.16 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.7445 -0.31 0.085" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+      <geometry>
+        <box size="0.015 0.12 0.13"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_7_scan_body_RT">
+    <visual>
+      <origin xyz="-0.513242 -1.5 0.2695" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.8 0.52 0.025"/>
+      </geometry>
+      <material><color rgba="0.30 0.38 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.513242 -1.5 0.2695" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.8 0.52 0.025"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.153492 -1.525 0.32" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.0805 0.165 0.076"/>
+      </geometry>
+      <material><color rgba="0.30 0.38 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.153492 -1.525 0.32" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.0805 0.165 0.076"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.802242 -1.5 0.458" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.226 0.3205 0.352"/>
+      </geometry>
+      <material><color rgba="0.30 0.38 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.802242 -1.5 0.458" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.226 0.3205 0.352"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.537742 -1.5025 0.347" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.281 0.155 0.102"/>
+      </geometry>
+      <material><color rgba="0.30 0.38 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.537742 -1.5025 0.347" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.281 0.155 0.102"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.513242 -1.535 0.7085" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.352 0.53 0.621"/>
+      </geometry>
+      <material><color rgba="0.30 0.38 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.513242 -1.535 0.7085" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.352 0.53 0.621"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.51251 -1.55213 2.88985" rpy="3.13612 -0.89071 1.5708"/>
+      <geometry>
+        <box size="0.1 0.0953271 0.145436"/>
+      </geometry>
+      <material><color rgba="0.30 0.38 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.51251 -1.55213 2.88985" rpy="3.13612 -0.89071 1.5708"/>
+      <geometry>
+        <box size="0.1 0.0953271 0.145436"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.507502 -1.50994 2.84151" rpy="-3.12431 0.89071 -1.5708"/>
+      <geometry>
+        <box size="0.0679 0.627868 0.0901768"/>
+      </geometry>
+      <material><color rgba="0.30 0.38 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.507502 -1.50994 2.84151" rpy="-3.12431 0.89071 -1.5708"/>
+      <geometry>
+        <box size="0.0679 0.627868 0.0901768"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.513241 -1.19258 0.455258" rpy="3.14123 -0.757225 1.5708"/>
+      <geometry>
+        <box size="0.145 0.0950325 0.100031"/>
+      </geometry>
+      <material><color rgba="0.30 0.38 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.513241 -1.19258 0.455258" rpy="3.14123 -0.757225 1.5708"/>
+      <geometry>
+        <box size="0.145 0.0950325 0.100031"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.507874 -1.14093 0.488655" rpy="-3.13022 0.757225 -1.5708"/>
+      <geometry>
+        <box size="0.0849506 0.627918 0.0683716"/>
+      </geometry>
+      <material><color rgba="0.30 0.38 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.507874 -1.14093 0.488655" rpy="-3.13022 0.757225 -1.5708"/>
+      <geometry>
+        <box size="0.0849506 0.627918 0.0683716"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/slab_0_1_1_252_08388a4c.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material><color rgba="0.30 0.38 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/slab_0_1_1_252_08388a4c.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_8_positioner_lift_link1">
+    <visual>
+      <origin xyz="0.503 0.55 1.6295" rpy="2.41701e-15 -1.71887e-13 -3.14159"/>
+      <geometry>
+        <box size="0.576 0.6 0.02"/>
+      </geometry>
+      <material><color rgba="0.78 0.47 0.20 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.503 0.55 1.6295" rpy="2.41701e-15 -1.71887e-13 -3.14159"/>
+      <geometry>
+        <box size="0.576 0.6 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.646 0.484 1.83575" rpy="-4.44089e-16 0 -1.94534e-16"/>
+      <geometry>
+        <box size="0.29 0.452 0.3925"/>
+      </geometry>
+      <material><color rgba="0.78 0.47 0.20 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.646 0.484 1.83575" rpy="-4.44089e-16 0 -1.94534e-16"/>
+      <geometry>
+        <box size="0.29 0.452 0.3925"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.646 0.041 1.8705" rpy="-1.5708 4.44089e-16 1.5708"/>
+      <geometry>
+        <box size="0.235 0.17993 0.17993"/>
+      </geometry>
+      <material><color rgba="0.78 0.47 0.20 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.646 0.041 1.8705" rpy="-1.5708 4.44089e-16 1.5708"/>
+      <geometry>
+        <box size="0.235 0.17993 0.17993"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.646 0.0235334 1.98536" rpy="-3.14159 -1.5708 0"/>
+      <geometry>
+        <box size="0.05032 0.0819332 0.0557"/>
+      </geometry>
+      <material><color rgba="0.78 0.47 0.20 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.646 0.0235334 1.98536" rpy="-3.14159 -1.5708 0"/>
+      <geometry>
+        <box size="0.05032 0.0819332 0.0557"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.646 0.20825 1.8705" rpy="1.5708 -1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.15" length="0.0995"/>
+      </geometry>
+      <material><color rgba="0.78 0.47 0.20 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.646 0.20825 1.8705" rpy="1.5708 -1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.15" length="0.0995"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_9_arm_dda_base">
+    <visual>
+      <origin xyz="6.0254e-15 0.0497499 1.25e-08" rpy="1.5708 -6.12323e-17 -2.51608e-16"/>
+      <geometry>
+        <cylinder radius="0.0980243" length="0.0995002"/>
+      </geometry>
+      <material><color rgba="0.31 0.70 0.57 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="6.0254e-15 0.0497499 1.25e-08" rpy="1.5708 -6.12323e-17 -2.51608e-16"/>
+      <geometry>
+        <cylinder radius="0.0980243" length="0.0995002"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_10_arm_dda_link1">
+    <visual>
+      <origin xyz="0.00971646 -0.000677326 0.08" rpy="-1.5708 9.44836e-13 -0.0695965"/>
+      <geometry>
+        <box size="0.16052 0.179 0.143756"/>
+      </geometry>
+      <material><color rgba="0.75 0.23 0.25 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.00971646 -0.000677326 0.08" rpy="-1.5708 9.44836e-13 -0.0695965"/>
+      <geometry>
+        <box size="0.16052 0.179 0.143756"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_11_arm_dda_link2">
+    <visual>
+      <origin xyz="0.0818238 -0.00178768 0.0118633" rpy="1.88892 -9.44951e-13 3.072"/>
+      <geometry>
+        <box size="0.1825 0.16602 0.151"/>
+      </geometry>
+      <material><color rgba="0.18 0.44 0.64 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0818238 -0.00178768 0.0118633" rpy="1.88892 -9.44951e-13 3.072"/>
+      <geometry>
+        <box size="0.1825 0.16602 0.151"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.0968857 0.183364 0.575926" rpy="1.88892 -9.44193e-13 3.072"/>
+      <geometry>
+        <box size="0.1452 0.1227 0.11714"/>
+      </geometry>
+      <material><color rgba="0.18 0.44 0.64 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0968857 0.183364 0.575926" rpy="1.88892 -9.44193e-13 3.072"/>
+      <geometry>
+        <box size="0.1452 0.1227 0.11714"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.104908 0.102883 0.333818" rpy="-3.14159 0.318124 1.5012"/>
+      <geometry>
+        <cylinder radius="0.059" length="0.523905"/>
+      </geometry>
+      <material><color rgba="0.18 0.44 0.64 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.104908 0.102883 0.333818" rpy="-3.14159 0.318124 1.5012"/>
+      <geometry>
+        <cylinder radius="0.059" length="0.523905"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_12_arm_dda_link3">
+    <visual>
+      <origin xyz="-0.0574819 -0.00484894 0.00265555" rpy="2.8496 9.44515e-13 -0.0695965"/>
+      <geometry>
+        <box size="0.128011 0.12995 0.117902"/>
+      </geometry>
+      <material><color rgba="0.65 0.73 0.18 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0574819 -0.00484894 0.00265555" rpy="2.8496 9.44515e-13 -0.0695965"/>
+      <geometry>
+        <box size="0.128011 0.12995 0.117902"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.086306 -0.536357 0.162636" rpy="-0.291997 9.43896e-13 -0.0695965"/>
+      <geometry>
+        <box size="0.116797 0.09035 0.0894071"/>
+      </geometry>
+      <material><color rgba="0.65 0.73 0.18 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.086306 -0.536357 0.162636" rpy="-0.291997 9.43896e-13 -0.0695965"/>
+      <geometry>
+        <box size="0.116797 0.09035 0.0894071"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.0833388 -0.301077 0.0920232" rpy="1.86279 -9.44271e-13 3.072"/>
+      <geometry>
+        <cylinder radius="0.045" length="0.50095"/>
+      </geometry>
+      <material><color rgba="0.65 0.73 0.18 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0833388 -0.301077 0.0920232" rpy="1.86279 -9.44271e-13 3.072"/>
+      <geometry>
+        <cylinder radius="0.045" length="0.50095"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_13_arm_dda_link4">
+    <visual>
+      <origin xyz="0.0435645 0.00593781 0.00306501" rpy="2.64345e-12 -1.5012 3.14159"/>
+      <geometry>
+        <box size="0.092182 0.131724 0.0993445"/>
+      </geometry>
+      <material><color rgba="0.84 0.39 0.70 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0435645 0.00593781 0.00306501" rpy="2.64345e-12 -1.5012 3.14159"/>
+      <geometry>
+        <box size="0.092182 0.131724 0.0993445"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_14_arm_dda_link5">
+    <visual>
+      <origin xyz="2.80991e-05 0.0496722 0.00593781" rpy="-1.5708 1.32571e-14 -1.18073e-14"/>
+      <geometry>
+        <box size="0.092182 0.131724 0.0993445"/>
+      </geometry>
+      <material><color rgba="0.13 0.62 0.48 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.80991e-05 0.0496722 0.00593781" rpy="-1.5708 1.32571e-14 -1.18073e-14"/>
+      <geometry>
+        <box size="0.092182 0.131724 0.0993445"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_15_arm_rt_base">
+    <visual>
+      <origin xyz="0 0 0.05325" rpy="-3.14159 -2.22045e-16 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.127774" length="0.1065"/>
+      </geometry>
+      <material><color rgba="0.95 0.48 0.17 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.05325" rpy="-3.14159 -2.22045e-16 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.127774" length="0.1065"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_16_arm_dda_link6">
+    <visual>
+      <origin xyz="2.04636e-15 -0.01875 3.18323e-15" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.045" length="0.0485"/>
+      </geometry>
+      <material><color rgba="0.39 0.27 0.66 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.04636e-15 -0.01875 3.18323e-15" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.045" length="0.0485"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_17_arm_rt_link1">
+    <visual>
+      <origin xyz="5.49316e-07 -0.0135144 0.122341" rpy="-7.88861e-31 5.1769e-31 -6.72205e-17"/>
+      <geometry>
+        <box size="0.186391 0.212971 0.245681"/>
+      </geometry>
+      <material><color rgba="0.43 0.68 0.82 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="5.49316e-07 -0.0135144 0.122341" rpy="-7.88861e-31 5.1769e-31 -6.72205e-17"/>
+      <geometry>
+        <box size="0.186391 0.212971 0.245681"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_18_arm_rt_link2">
+    <visual>
+      <origin xyz="-5.49316e-07 -0.122341 0.0197644" rpy="-8.34047e-17 1.11022e-16 6.80571e-17"/>
+      <geometry>
+        <box size="0.186391 0.245681 0.225471"/>
+      </geometry>
+      <material><color rgba="0.73 0.61 0.20 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.49316e-07 -0.122341 0.0197644" rpy="-8.34047e-17 1.11022e-16 6.80571e-17"/>
+      <geometry>
+        <box size="0.186391 0.245681 0.225471"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.25056e-15 -0.128812 0.87556" rpy="-8.34047e-17 1.11022e-16 6.80571e-17"/>
+      <geometry>
+        <box size="0.152 0.186625 0.174119"/>
+      </geometry>
+      <material><color rgba="0.73 0.61 0.20 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.25056e-15 -0.128812 0.87556" rpy="-8.34047e-17 1.11022e-16 6.80571e-17"/>
+      <geometry>
+        <box size="0.152 0.186625 0.174119"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="4.54747e-16 -0.1345 0.461" rpy="-1.13545e-17 -1.11022e-16 3.14159"/>
+      <geometry>
+        <cylinder radius="0.076" length="0.655"/>
+      </geometry>
+      <material><color rgba="0.73 0.61 0.20 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="4.54747e-16 -0.1345 0.461" rpy="-1.13545e-17 -1.11022e-16 3.14159"/>
+      <geometry>
+        <cylinder radius="0.076" length="0.655"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_19_arm_rt_link3">
+    <visual>
+      <origin xyz="1.05729e-14 0.0903097 0.00568772" rpy="-8.08208e-17 -1.11022e-16 -3.36539e-17"/>
+      <geometry>
+        <box size="0.152 0.167619 0.186625"/>
+      </geometry>
+      <material><color rgba="0.70 0.30 0.48 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.05729e-14 0.0903097 0.00568772" rpy="-8.08208e-17 -1.11022e-16 -3.36539e-17"/>
+      <geometry>
+        <box size="0.152 0.167619 0.186625"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_20_arm_rt_link5">
+    <visual>
+      <origin xyz="3.3995e-16 0.0567194 0.00470974" rpy="6.27836e-17 -1.24769e-24 1.90577e-14"/>
+      <geometry>
+        <box size="0.099024 0.113439 0.14498"/>
+      </geometry>
+      <material><color rgba="0.26 0.57 0.30 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="3.3995e-16 0.0567194 0.00470974" rpy="6.27836e-17 -1.24769e-24 1.90577e-14"/>
+      <geometry>
+        <box size="0.099024 0.113439 0.14498"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_21_arm_rt_link6">
+    <visual>
+      <origin xyz="1.13687e-16 -1.13687e-16 0.01925" rpy="3.14159 -1.78906e-13 -0.523599"/>
+      <geometry>
+        <cylinder radius="0.049" length="0.0525"/>
+      </geometry>
+      <material><color rgba="0.80 0.45 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.13687e-16 -1.13687e-16 0.01925" rpy="3.14159 -1.78906e-13 -0.523599"/>
+      <geometry>
+        <cylinder radius="0.049" length="0.0525"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_22_positioner_lift_link2">
+    <visual>
+      <origin xyz="-1.076 4.15365e-16 -0.167" rpy="4.74284e-17 -1.5708 0"/>
+      <geometry>
+        <box size="0.134 0.092 0.022"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.076 4.15365e-16 -0.167" rpy="4.74284e-17 -1.5708 0"/>
+      <geometry>
+        <box size="0.134 0.092 0.022"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.166 2.80728e-17 -0.167" rpy="3.14159 -1.5708 0"/>
+      <geometry>
+        <box size="0.134 0.092 0.022"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.166 2.80728e-17 -0.167" rpy="3.14159 -1.5708 0"/>
+      <geometry>
+        <box size="0.134 0.092 0.022"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.1865 0.0145 -0.188" rpy="1.5708 -8.12744e-18 -3.14159"/>
+      <geometry>
+        <box size="0.081 0.088 0.097"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.1865 0.0145 -0.188" rpy="1.5708 -8.12744e-18 -3.14159"/>
+      <geometry>
+        <box size="0.081 0.088 0.097"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.299906 0.000751545 -0.198" rpy="1.5708 1.7177e-13 1.5708"/>
+      <geometry>
+        <box size="0.160337 0.16 0.135811"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.299906 0.000751545 -0.198" rpy="1.5708 1.7177e-13 1.5708"/>
+      <geometry>
+        <box size="0.160337 0.16 0.135811"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.44 -0.076 -0.136" rpy="3.14159 1.07707e-16 1.06496e-29"/>
+      <geometry>
+        <box size="1.18 0.022 0.023"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.44 -0.076 -0.136" rpy="3.14159 1.07707e-16 1.06496e-29"/>
+      <geometry>
+        <box size="1.18 0.022 0.023"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.44 0.076 -0.136" rpy="-4.74e-16 1.07707e-16 4.16334e-17"/>
+      <geometry>
+        <box size="1.18 0.022 0.023"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.44 0.076 -0.136" rpy="-4.74e-16 1.07707e-16 4.16334e-17"/>
+      <geometry>
+        <box size="1.18 0.022 0.023"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.44 -0.059 -0.1355" rpy="1.5708 1.07707e-16 -7.88861e-30"/>
+      <geometry>
+        <box size="1.18 0.049 0.018"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.44 -0.059 -0.1355" rpy="1.5708 1.07707e-16 -7.88861e-30"/>
+      <geometry>
+        <box size="1.18 0.049 0.018"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.44 0.059 -0.1355" rpy="1.5708 -8.12744e-18 -3.14159"/>
+      <geometry>
+        <box size="1.18 0.049 0.018"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.44 0.059 -0.1355" rpy="1.5708 -8.12744e-18 -3.14159"/>
+      <geometry>
+        <box size="1.18 0.049 0.018"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-9.10524e-17 2.14936e-16 -0.045" rpy="-4.17142e-15 -1.5708 0"/>
+      <geometry>
+        <box size="0.06 0.18 0.15"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-9.10524e-17 2.14936e-16 -0.045" rpy="-4.17142e-15 -1.5708 0"/>
+      <geometry>
+        <box size="0.06 0.18 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.455 4.66403e-16 -0.11" rpy="-1.5708 3.29752e-16 -4.62692e-17"/>
+      <geometry>
+        <box size="1.234 0.114 0.1"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.455 4.66403e-16 -0.11" rpy="-1.5708 3.29752e-16 -4.62692e-17"/>
+      <geometry>
+        <box size="1.234 0.114 0.1"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 2.16635e-16 0" rpy="9.86076e-32 -1.71892e-13 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.045" length="0.03"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 2.16635e-16 0" rpy="9.86076e-32 -1.71892e-13 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.045" length="0.03"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.4615 1.24916e-15 -0.198" rpy="-1.5708 -0.479063 1.5708"/>
+      <geometry>
+        <cylinder radius="0.0125" length="1.215"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.4615 1.24916e-15 -0.198" rpy="-1.5708 -0.479063 1.5708"/>
+      <geometry>
+        <cylinder radius="0.0125" length="1.215"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.237 2.9211e-16 -0.198" rpy="-1.5708 0.479063 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.0075" length="0.054"/>
+      </geometry>
+      <material><color rgba="0.27 0.35 0.55 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.237 2.9211e-16 -0.198" rpy="-1.5708 0.479063 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.0075" length="0.054"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_23_positioner_lift_link3">
+    <visual>
+      <origin xyz="1.05 -0.0585 0.06" rpy="0 -1.38051e-30 8.12744e-18"/>
+      <geometry>
+        <box size="0.23 0.129 0.266"/>
+      </geometry>
+      <material><color rgba="0.62 0.74 0.47 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.05 -0.0585 0.06" rpy="0 -1.38051e-30 8.12744e-18"/>
+      <geometry>
+        <box size="0.23 0.129 0.266"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.05 -0.183 0.0675" rpy="-3.14159 -1.5708 0"/>
+      <geometry>
+        <box size="0.251 0.12 0.139"/>
+      </geometry>
+      <material><color rgba="0.62 0.74 0.47 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="1.05 -0.183 0.0675" rpy="-3.14159 -1.5708 0"/>
+      <geometry>
+        <box size="0.251 0.12 0.139"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_24_positioner_lift_link4">
+    <visual>
+      <origin xyz="-1.13687e-16 -6.5525e-16 0.1245" rpy="-3.84547e-17 1.5708 0"/>
+      <geometry>
+        <box size="0.199 0.144 0.105"/>
+      </geometry>
+      <material><color rgba="0.88 0.56 0.65 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.13687e-16 -6.5525e-16 0.1245" rpy="-3.84547e-17 1.5708 0"/>
+      <geometry>
+        <box size="0.199 0.144 0.105"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 3.31727e-16 -0.01875" rpy="3.14159 1.65676e-13 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.0875"/>
+      </geometry>
+      <material><color rgba="0.88 0.56 0.65 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 3.31727e-16 -0.01875" rpy="3.14159 1.65676e-13 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.0875"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_25_positioner_lift_link5">
+    <visual>
+      <origin xyz="0.011 -2.27334e-16 0.033" rpy="-3.14159 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.192 0.015"/>
+      </geometry>
+      <material><color rgba="0.35 0.71 0.74 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.011 -2.27334e-16 0.033" rpy="-3.14159 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.192 0.015"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.146 -1.6535e-16 0.033" rpy="-3.14159 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.192 0.015"/>
+      </geometry>
+      <material><color rgba="0.35 0.71 0.74 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.146 -1.6535e-16 0.033" rpy="-3.14159 -1.5708 0"/>
+      <geometry>
+        <box size="0.15 0.192 0.015"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.0785 -4.58369e-16 0.1125" rpy="-5.40761e-17 -3.66933e-17 -6.31089e-30"/>
+      <geometry>
+        <box size="0.192 0.192 0.015"/>
+      </geometry>
+      <material><color rgba="0.35 0.71 0.74 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0785 -4.58369e-16 0.1125" rpy="-5.40761e-17 -3.66933e-17 -6.31089e-30"/>
+      <geometry>
+        <box size="0.192 0.192 0.015"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.0785 -4.40927e-16 0.18075" rpy="1.82642e-16 7.32243e-17 0.523599"/>
+      <geometry>
+        <cylinder radius="0.0980115" length="0.1215"/>
+      </geometry>
+      <material><color rgba="0.35 0.71 0.74 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0785 -4.40927e-16 0.18075" rpy="1.82642e-16 7.32243e-17 0.523599"/>
+      <geometry>
+        <cylinder radius="0.0980115" length="0.1215"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.158 -1.68718e-16 4.54747e-16" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.0175" length="0.009"/>
+      </geometry>
+      <material><color rgba="0.35 0.71 0.74 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.158 -1.68718e-16 4.54747e-16" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.0175" length="0.009"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.001 -1.60878e-16 0" rpy="-3.84547e-17 1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.0175" length="0.009"/>
+      </geometry>
+      <material><color rgba="0.35 0.71 0.74 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.001 -1.60878e-16 0" rpy="-3.84547e-17 1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.0175" length="0.009"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_26_positioner_lift_idler_link1">
+    <visual>
+      <origin xyz="2.7095 1.06 0.115" rpy="-1.59744e-29 0 -9.21934e-17"/>
+      <geometry>
+        <box size="0.726 0.086 0.06"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.7095 1.06 0.115" rpy="-1.59744e-29 0 -9.21934e-17"/>
+      <geometry>
+        <box size="0.726 0.086 0.06"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.7095 0.416 0.115" rpy="-1.59744e-29 0 -9.21934e-17"/>
+      <geometry>
+        <box size="0.726 0.086 0.06"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.7095 0.416 0.115" rpy="-1.59744e-29 0 -9.21934e-17"/>
+      <geometry>
+        <box size="0.726 0.086 0.06"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.7171 0.738 0.1625" rpy="-1.59744e-29 0 -9.21934e-17"/>
+      <geometry>
+        <box size="0.72 0.744 0.045"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.7171 0.738 0.1625" rpy="-1.59744e-29 0 -9.21934e-17"/>
+      <geometry>
+        <box size="0.72 0.744 0.045"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.6071 0.463 1.217" rpy="1.26226e-15 1.22125e-15 -2.55757e-15"/>
+      <geometry>
+        <box size="0.15 0.15 2.064"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.6071 0.463 1.217" rpy="1.26226e-15 1.22125e-15 -2.55757e-15"/>
+      <geometry>
+        <box size="0.15 0.15 2.064"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.6071 0.738 2.174" rpy="-1.5708 1.339e-15 -2.55757e-15"/>
+      <geometry>
+        <box size="0.15 0.15 0.7"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.6071 0.738 2.174" rpy="-1.5708 1.339e-15 -2.55757e-15"/>
+      <geometry>
+        <box size="0.15 0.15 0.7"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.6071 1.013 1.217" rpy="-1.26226e-15 -1.22125e-15 3.14159"/>
+      <geometry>
+        <box size="0.15 0.15 2.064"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.6071 1.013 1.217" rpy="-1.26226e-15 -1.22125e-15 3.14159"/>
+      <geometry>
+        <box size="0.15 0.15 2.064"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.5171 0.493 1.17625" rpy="-3.00166e-15 -1.5708 0"/>
+      <geometry>
+        <box size="1.5425 0.09 0.03"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.5171 0.493 1.17625" rpy="-3.00166e-15 -1.5708 0"/>
+      <geometry>
+        <box size="1.5425 0.09 0.03"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.4881 0.488 1.19" rpy="1.5708 -1.5708 0"/>
+      <geometry>
+        <box size="1.515 0.038 0.045"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.4881 0.488 1.19" rpy="1.5708 -1.5708 0"/>
+      <geometry>
+        <box size="1.515 0.038 0.045"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.5171 0.983 1.17625" rpy="-3.00166e-15 -1.5708 0"/>
+      <geometry>
+        <box size="1.5425 0.09 0.03"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.5171 0.983 1.17625" rpy="-3.00166e-15 -1.5708 0"/>
+      <geometry>
+        <box size="1.5425 0.09 0.03"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.4881 0.988 1.19" rpy="1.5708 -1.5708 0"/>
+      <geometry>
+        <box size="1.515 0.038 0.045"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.4881 0.988 1.19" rpy="1.5708 -1.5708 0"/>
+      <geometry>
+        <box size="1.515 0.038 0.045"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.4571 1.013 0.285" rpy="1.5708 -1.22125e-15 3.14159"/>
+      <geometry>
+        <box size="0.15 0.2 0.012"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.4571 1.013 0.285" rpy="1.5708 -1.22125e-15 3.14159"/>
+      <geometry>
+        <box size="0.15 0.2 0.012"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.4571 0.463 0.285" rpy="1.5708 -1.16838e-15 3.14159"/>
+      <geometry>
+        <box size="0.15 0.2 0.012"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.4571 0.463 0.285" rpy="1.5708 -1.16838e-15 3.14159"/>
+      <geometry>
+        <box size="0.15 0.2 0.012"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.6071 0.738 2.059" rpy="-1.26226e-15 -1.22125e-15 3.14159"/>
+      <geometry>
+        <box size="0.15 0.15 0.08"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.6071 0.738 2.059" rpy="-1.26226e-15 -1.22125e-15 3.14159"/>
+      <geometry>
+        <box size="0.15 0.15 0.08"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.89795 0.738 0.38" rpy="1.5708 1.73528e-13 -2.55757e-15"/>
+      <geometry>
+        <box size="0.3683 0.39 0.5"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.89795 0.738 0.38" rpy="1.5708 1.73528e-13 -2.55757e-15"/>
+      <geometry>
+        <box size="0.3683 0.39 0.5"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.6986 0.738 1.38435" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <box size="1.6183 0.03 0.537"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.6986 0.738 1.38435" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <box size="1.6183 0.03 0.537"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.6471 0.738 0.273" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <box size="0.176 0.28 0.195"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.6471 0.738 0.273" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <box size="0.176 0.28 0.195"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.6071 0.738 1.18975" rpy="-2.38609e-15 1.66771e-15 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.025" length="1.6575"/>
+      </geometry>
+      <material><color rgba="0.79 0.60 0.38 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.6071 0.738 1.18975" rpy="-2.38609e-15 1.66771e-15 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.025" length="1.6575"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_27_positioner_lift_idler_link2">
+    <visual>
+      <origin xyz="0.503 0.55 1.6295" rpy="5.55112e-17 5.31992e-16 1.5708"/>
+      <geometry>
+        <box size="0.6 0.576 0.02"/>
+      </geometry>
+      <material><color rgba="0.49 0.38 0.29 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.503 0.55 1.6295" rpy="5.55112e-17 5.31992e-16 1.5708"/>
+      <geometry>
+        <box size="0.6 0.576 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.691 0.55 1.6495" rpy="5.55112e-17 5.31992e-16 1.5708"/>
+      <geometry>
+        <box size="0.255 0.2 0.02"/>
+      </geometry>
+      <material><color rgba="0.49 0.38 0.29 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.691 0.55 1.6495" rpy="5.55112e-17 5.31992e-16 1.5708"/>
+      <geometry>
+        <box size="0.255 0.2 0.02"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.691 0.55 1.768" rpy="1.5708 6.38744e-16 1.5708"/>
+      <geometry>
+        <box size="0.128 0.223 0.2"/>
+      </geometry>
+      <material><color rgba="0.49 0.38 0.29 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.691 0.55 1.768" rpy="1.5708 6.38744e-16 1.5708"/>
+      <geometry>
+        <box size="0.128 0.223 0.2"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.471 0.55 1.4225" rpy="1.5708 -4.85733e-16 -1.5708"/>
+      <geometry>
+        <box size="0.6 0.4 0.02"/>
+      </geometry>
+      <material><color rgba="0.49 0.38 0.29 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.471 0.55 1.4225" rpy="1.5708 -4.85733e-16 -1.5708"/>
+      <geometry>
+        <box size="0.6 0.4 0.02"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_28_positioner_lift_idler_link3">
+    <visual>
+      <origin xyz="-2.66059e-18 0.165906 0.079" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.0809307" length="0.135811"/>
+      </geometry>
+      <material><color rgba="0.39 0.61 0.49 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-2.66059e-18 0.165906 0.079" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.0809307" length="0.135811"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="5.32699e-17 -7.47249e-17 0.1145" rpy="-1.5708 1.72436e-13 1.5708"/>
+      <geometry>
+        <box size="0.145 0.199 0.105"/>
+      </geometry>
+      <material><color rgba="0.39 0.61 0.49 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="5.32699e-17 -7.47249e-17 0.1145" rpy="-1.5708 1.72436e-13 1.5708"/>
+      <geometry>
+        <box size="0.145 0.199 0.105"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.61559e-30 4.56972e-16 -0.1065" rpy="-3.14159 -1.72558e-13 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.243"/>
+      </geometry>
+      <material><color rgba="0.39 0.61 0.49 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.61559e-30 4.56972e-16 -0.1065" rpy="-3.14159 -1.72558e-13 -1.5708"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.243"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-2.66059e-18 0.049 0.079" rpy="1.5708 8.1876e-16 1.06496e-29"/>
+      <geometry>
+        <cylinder radius="0.015" length="0.098"/>
+      </geometry>
+      <material><color rgba="0.39 0.61 0.49 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-2.66059e-18 0.049 0.079" rpy="1.5708 8.1876e-16 1.06496e-29"/>
+      <geometry>
+        <cylinder radius="0.015" length="0.098"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_29_positioner_lift_idler_link4">
+    <visual>
+      <origin xyz="-0.0785 7.75352e-17 0.033" rpy="7.9287e-18 -6.94182e-17 1.22273e-29"/>
+      <geometry>
+        <box size="0.15 0.192 0.15"/>
+      </geometry>
+      <material><color rgba="0.61 0.48 0.75 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0785 7.75352e-17 0.033" rpy="7.9287e-18 -6.94182e-17 1.22273e-29"/>
+      <geometry>
+        <box size="0.15 0.192 0.15"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.0785 -8.16808e-16 0.1125" rpy="7.9287e-18 -6.94182e-17 1.22273e-29"/>
+      <geometry>
+        <box size="0.192 0.192 0.015"/>
+      </geometry>
+      <material><color rgba="0.61 0.48 0.75 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0785 -8.16808e-16 0.1125" rpy="7.9287e-18 -6.94182e-17 1.22273e-29"/>
+      <geometry>
+        <box size="0.192 0.192 0.015"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.0785 -4.60594e-16 0.18075" rpy="1.18572e-16 7.24278e-17 0.523599"/>
+      <geometry>
+        <cylinder radius="0.0980115" length="0.1215"/>
+      </geometry>
+      <material><color rgba="0.61 0.48 0.75 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0785 -4.60594e-16 0.18075" rpy="1.18572e-16 7.24278e-17 0.523599"/>
+      <geometry>
+        <cylinder radius="0.0980115" length="0.1215"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_30_arm_rt_link4">
+    <visual>
+      <origin xyz="6.14477e-14 -0.12449 0.779619" rpy="7.76289e-17 1.66533e-16 -3.16587e-17"/>
+      <geometry>
+        <box size="0.099024 0.14498 0.123239"/>
+      </geometry>
+      <material><color rgba="0.85 0.67 0.22 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="6.14477e-14 -0.12449 0.779619" rpy="7.76289e-17 1.66533e-16 -3.16587e-17"/>
+      <geometry>
+        <box size="0.099024 0.14498 0.123239"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="2.27374e-16 -2.27374e-16 -0.0975" rpy="-2.1684e-19 1.16573e-15 9.02924e-16"/>
+      <geometry>
+        <mesh filename="meshes/0_1_1_388.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material><color rgba="0.85 0.67 0.22 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="2.27374e-16 -2.27374e-16 -0.0975" rpy="-2.1684e-19 1.16573e-15 9.02924e-16"/>
+      <geometry>
+        <mesh filename="meshes/0_1_1_388.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_31_scan_body_slide_DDA">
+    <visual>
+      <origin xyz="-0.66625 0.05775 -0.00325" rpy="1.5708 -5.04416e-16 -3.14159"/>
+      <geometry>
+        <box size="1.3315 0.3515 0.1225"/>
+      </geometry>
+      <material><color rgba="0.25 0.48 0.74 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.66625 0.05775 -0.00325" rpy="1.5708 -5.04416e-16 -3.14159"/>
+      <geometry>
+        <box size="1.3315 0.3515 0.1225"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-1.9768 1.167 -0.677622" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="meshes/slab_0_1_1_316_3770c99a.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material><color rgba="0.25 0.48 0.74 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-1.9768 1.167 -0.677622" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="meshes/slab_0_1_1_316_3770c99a.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_32_scan_body_slide_RT">
+    <visual>
+      <origin xyz="-0.0188267 -0.439 -0.124014" rpy="3.62163e-17 -4.71751e-15 6.0071e-13"/>
+      <geometry>
+        <box size="0.352 1.332 0.12"/>
+      </geometry>
+      <material><color rgba="0.78 0.32 0.31 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0188267 -0.439 -0.124014" rpy="3.62163e-17 -4.71751e-15 6.0071e-13"/>
+      <geometry>
+        <box size="0.352 1.332 0.12"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.493416 0.801308 -1.23201" rpy="3.62163e-17 -4.71751e-15 6.0071e-13"/>
+      <geometry>
+        <mesh filename="meshes/slab_0_1_1_316_04f00c32.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material><color rgba="0.78 0.32 0.31 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.493416 0.801308 -1.23201" rpy="3.62163e-17 -4.71751e-15 6.0071e-13"/>
+      <geometry>
+        <mesh filename="meshes/slab_0_1_1_316_04f00c32.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="joint_0_node" type="fixed">
+    <parent link="base_link"/>
+    <child link="link_0_node"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  <joint name="joint_1_DDA" type="fixed">
+    <parent link="link_16_arm_dda_link6"/>
+    <child link="link_1_DDA"/>
+    <origin xyz="0.101347 -0.0975208 0.0305894" rpy="1.5708 -1.24921e-14 2.8731e-13"/>
+  </joint>
+  <joint name="joint_2_rail_DDA" type="fixed">
+    <parent link="base_link"/>
+    <child link="link_2_rail_DDA"/>
+    <origin xyz="0.32245 1.5 0.03" rpy="-8.16207e-16 3.88236e-14 -3.14159"/>
+  </joint>
+  <joint name="joint_3_scan_body_DDA" type="prismatic">
+    <parent link="link_2_rail_DDA"/>
+    <child link="link_3_scan_body_DDA"/>
+    <origin xyz="0.995572 6.82121e-15 0.227" rpy="1.5708 -4.43595e-15 7.88908e-15"/>
+    <axis xyz="-1 -8.38267e-15 4.37673e-14"/>
+    <limit lower="-2" upper="3.2" effort="0" velocity="0"/>
+  </joint>
+  <joint name="joint_4_RT" type="fixed">
+    <parent link="link_21_arm_rt_link6"/>
+    <child link="link_4_RT"/>
+    <origin xyz="6.87805e-15 -2.10321e-15 0.05" rpy="-3.14159 1.5596e-14 1.0472"/>
+  </joint>
+  <joint name="joint_5_positioner_base" type="fixed">
+    <parent link="base_link"/>
+    <child link="link_5_positioner_base"/>
+    <origin xyz="-0.91145 0.738 0.2036" rpy="1.22125e-15 -1.73663e-13 -3.14159"/>
+  </joint>
+  <joint name="joint_6_rail_RT" type="fixed">
+    <parent link="base_link"/>
+    <child link="link_6_rail_RT"/>
+    <origin xyz="0.32245 -1.5 0.03" rpy="-8.16207e-16 -1.52424e-14 3.14159"/>
+  </joint>
+  <joint name="joint_7_scan_body_RT" type="prismatic">
+    <parent link="link_6_rail_RT"/>
+    <child link="link_7_scan_body_RT"/>
+    <origin xyz="0.32245 -1.5 -0.03" rpy="-8.16207e-16 -1.52424e-14 -3.14159"/>
+    <axis xyz="-1 5.51758e-13 5.6747e-15"/>
+    <limit lower="-3.2" upper="1.929" effort="0" velocity="0"/>
+  </joint>
+  <joint name="joint_8_positioner_lift_link1" type="prismatic">
+    <parent link="link_5_positioner_base"/>
+    <child link="link_8_positioner_lift_link1"/>
+    <origin xyz="-5.225 0.188 0.075" rpy="1.19576e-15 1.77636e-15 -2.80712e-15"/>
+    <axis xyz="5.55112e-17 5.31992e-16 1"/>
+    <limit lower="-0.79" upper="0" effort="0" velocity="0"/>
+  </joint>
+  <joint name="joint_9_arm_dda_base" type="fixed">
+    <parent link="link_31_scan_body_slide_DDA"/>
+    <child link="link_9_arm_dda_base"/>
+    <origin xyz="-1.086 -0.001 -0.00449999" rpy="3.14159 1.5708 0"/>
+  </joint>
+  <joint name="joint_10_arm_dda_link1" type="continuous">
+    <parent link="link_9_arm_dda_base"/>
+    <child link="link_10_arm_dda_link1"/>
+    <origin xyz="6.0254e-15 0.0995 1.25e-08" rpy="-1.5708 -2.80933e-13 9.47026e-13"/>
+    <axis xyz="-9.47187e-13 -5.49213e-16 -1"/>
+  </joint>
+  <joint name="joint_11_arm_dda_link2" type="continuous">
+    <parent link="link_10_arm_dda_link1"/>
+    <child link="link_11_arm_dda_link2"/>
+    <origin xyz="0.0897821 -0.00625863 0.0975" rpy="0 0 0"/>
+    <axis xyz="0.997579 -0.0695404 -9.44828e-13"/>
+  </joint>
+  <joint name="joint_12_arm_dda_link3" type="continuous">
+    <parent link="link_11_arm_dda_link2"/>
+    <child link="link_12_arm_dda_link3"/>
+    <origin xyz="0.0245996 0.190394 0.581957" rpy="0 0 0"/>
+    <axis xyz="-0.997579 0.0695404 9.44183e-13"/>
+  </joint>
+  <joint name="joint_13_arm_dda_link4" type="continuous">
+    <parent link="link_12_arm_dda_link3"/>
+    <child link="link_13_arm_dda_link4"/>
+    <origin xyz="-0.0283934 -0.545362 0.164126" rpy="1.5708 9.47026e-13 2.80933e-13"/>
+    <axis xyz="0.997579 6.56636e-16 0.0695404"/>
+  </joint>
+  <joint name="joint_14_arm_dda_link5" type="continuous">
+    <parent link="link_13_arm_dda_link4"/>
+    <child link="link_14_arm_dda_link5"/>
+    <origin xyz="0.045739 0.0653 0.00318843" rpy="0 1.52482e-29 0"/>
+    <axis xyz="-1.22514e-14 -1 1.82164e-13"/>
+  </joint>
+  <joint name="joint_15_arm_rt_base" type="fixed">
+    <parent link="link_32_scan_body_slide_RT"/>
+    <child link="link_15_arm_rt_base"/>
+    <origin xyz="-0.0198267 -0.019 -0.0640144" rpy="1.25191e-16 2.25447e-15 -5.1902e-16"/>
+  </joint>
+  <joint name="joint_16_arm_dda_link6" type="continuous">
+    <parent link="link_14_arm_dda_link5"/>
+    <child link="link_16_arm_dda_link6"/>
+    <origin xyz="1.47793e-15 0.05185 0.0718" rpy="-1.5708 -2.80933e-13 9.47026e-13"/>
+    <axis xyz="2.94412e-13 -1 1.84163e-13"/>
+  </joint>
+  <joint name="joint_17_arm_rt_link1" type="continuous">
+    <parent link="link_15_arm_rt_base"/>
+    <child link="link_17_arm_rt_link1"/>
+    <origin xyz="1.13687e-16 0 0.1065" rpy="-6.19449e-17 -2.21962e-16 -1.56967"/>
+    <axis xyz="8.29003e-20 6.1694e-17 -1"/>
+  </joint>
+  <joint name="joint_18_arm_rt_link2" type="continuous">
+    <parent link="link_17_arm_rt_link1"/>
+    <child link="link_18_arm_rt_link2"/>
+    <origin xyz="2.27374e-16 -0.12 0.1345" rpy="-5.01041e-16 0.886663 1.22491e-17"/>
+    <axis xyz="-7.84984e-18 -1 -5.10615e-16"/>
+  </joint>
+  <joint name="joint_19_arm_rt_link3" type="continuous">
+    <parent link="link_18_arm_rt_link2"/>
+    <child link="link_19_arm_rt_link3"/>
+    <origin xyz="-1.7053e-15 -0.0435 0.885" rpy="-3.14159 -1.07634 3.14159"/>
+    <axis xyz="-2.41124e-14 -1 2.37081e-14"/>
+  </joint>
+  <joint name="joint_20_arm_rt_link5" type="continuous">
+    <parent link="link_30_arm_rt_link4"/>
+    <child link="link_20_arm_rt_link5"/>
+    <origin xyz="5.2637e-14 -0.0597 0.7875" rpy="4.3257e-15 0.392209 9.30281e-15"/>
+    <axis xyz="0 1 -3.50057e-29"/>
+  </joint>
+  <joint name="joint_21_arm_rt_link6" type="continuous">
+    <parent link="link_20_arm_rt_link5"/>
+    <child link="link_21_arm_rt_link6"/>
+    <origin xyz="7.86038e-17 0.0597 0.0845" rpy="-2.21839e-17 8.37055e-17 0.52633"/>
+    <axis xyz="2.52435e-29 2.52435e-29 1"/>
+  </joint>
+  <joint name="joint_22_positioner_lift_link2" type="continuous">
+    <parent link="link_8_positioner_lift_link1"/>
+    <child link="link_22_positioner_lift_link2"/>
+    <origin xyz="0.811 0.55 1.9045" rpy="1.5708 -5.31992e-16 -1.5708"/>
+    <axis xyz="1.76045e-31 0 1"/>
+  </joint>
+  <joint name="joint_23_positioner_lift_link3" type="prismatic">
+    <parent link="link_22_positioner_lift_link2"/>
+    <child link="link_23_positioner_lift_link3"/>
+    <origin xyz="0.15 -0.05 -0.11" rpy="1.5708 -1.76272e-30 -3.14159"/>
+    <axis xyz="-1 -7.77156e-16 -1.01657e-15"/>
+    <limit lower="0" upper="0.85" effort="0" velocity="0"/>
+  </joint>
+  <joint name="joint_24_positioner_lift_link4" type="continuous">
+    <parent link="link_23_positioner_lift_link3"/>
+    <child link="link_24_positioner_lift_link4"/>
+    <origin xyz="1.05 -0.2715 0.05" rpy="1.5708 -2.28722e-15 2.04322e-15"/>
+    <axis xyz="-4.30796e-31 0 -1"/>
+  </joint>
+  <joint name="joint_25_positioner_lift_link5" type="continuous">
+    <parent link="link_24_positioner_lift_link4"/>
+    <child link="link_25_positioner_lift_link5"/>
+    <origin xyz="-0.0785 -4.33804e-16 0.152" rpy="-7.03594e-16 -3.63657e-32 0"/>
+    <axis xyz="1 -6.93889e-17 -1.22465e-16"/>
+  </joint>
+  <joint name="joint_26_positioner_lift_idler_link1" type="prismatic">
+    <parent link="link_5_positioner_base"/>
+    <child link="link_26_positioner_lift_idler_link1"/>
+    <origin xyz="0 0 -1.29219e-17" rpy="0 0 -1.18369e-31"/>
+    <axis xyz="-1 2.69203e-15 1.22125e-15"/>
+    <limit lower="0" upper="4" effort="0" velocity="0"/>
+  </joint>
+  <joint name="joint_27_positioner_lift_idler_link2" type="prismatic">
+    <parent link="link_26_positioner_lift_idler_link1"/>
+    <child link="link_27_positioner_lift_idler_link2"/>
+    <origin xyz="2.9021 1.288 0.16" rpy="-1.26226e-15 -1.22125e-15 3.14159"/>
+    <axis xyz="5.55112e-17 5.31992e-16 1"/>
+    <limit lower="-0.8" upper="0" effort="0" velocity="0"/>
+    <mimic joint="joint_8_positioner_lift_link1" multiplier="1" offset="0"/>
+  </joint>
+  <joint name="joint_28_positioner_lift_idler_link3" type="continuous">
+    <parent link="link_27_positioner_lift_idler_link2"/>
+    <child link="link_28_positioner_lift_idler_link3"/>
+    <origin xyz="0.804 0.55 1.8195" rpy="1.5708 6.38744e-16 1.5708"/>
+    <axis xyz="1.1463e-31 0 -1"/>
+  </joint>
+  <joint name="joint_29_positioner_lift_idler_link4" type="continuous">
+    <parent link="link_28_positioner_lift_idler_link3"/>
+    <child link="link_29_positioner_lift_idler_link4"/>
+    <origin xyz="0.0785 3.66565e-16 0.142" rpy="-7.03594e-16 1.1463e-31 0"/>
+    <axis xyz="-1 6.93889e-17 -4.41934e-32"/>
+  </joint>
+  <joint name="joint_30_arm_rt_link4" type="continuous">
+    <parent link="link_19_arm_rt_link3"/>
+    <child link="link_30_arm_rt_link4"/>
+    <origin xyz="1.05729e-14 0.0965 0.0975" rpy="2.02746e-16 -1.05471e-15 3.13864"/>
+    <axis xyz="-8.88178e-16 2.1684e-19 -1"/>
+  </joint>
+  <joint name="joint_31_scan_body_slide_DDA" type="prismatic">
+    <parent link="link_3_scan_body_DDA"/>
+    <child link="link_31_scan_body_slide_DDA"/>
+    <origin xyz="0.0045 0.91 0.476799" rpy="-3.14159 -1.5708 0"/>
+    <axis xyz="-1 -1.57559e-14 3.9695e-16"/>
+    <limit lower="0" upper="0.7" effort="0" velocity="0"/>
+  </joint>
+  <joint name="joint_32_scan_body_slide_RT" type="prismatic">
+    <parent link="link_7_scan_body_RT"/>
+    <child link="link_32_scan_body_slide_RT"/>
+    <origin xyz="-0.493416 -0.801308 1.23201" rpy="-3.62163e-17 4.71751e-15 -6.0071e-13"/>
+    <axis xyz="5.48383e-12 1 -2.22045e-16"/>
+    <limit lower="0" upper="0.7" effort="0" velocity="0"/>
+  </joint>
+  <link name="tcp_RT"/>
+  <joint name="tcp_RT_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="tcp_RT"/>
+    <origin xyz="-0.579891 -0.299429 2.25309" rpy="-6.10623e-16 1.72943e-13 1.5708"/>
+  </joint>
+  <link name="tcp_DDA"/>
+  <joint name="tcp_DDA_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="tcp_DDA"/>
+    <origin xyz="-0.536895 0.358583 2.23052" rpy="-6.50527e-14 -1.78649e-13 -1.5708"/>
+  </joint>
+</robot>
