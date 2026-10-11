@@ -1,0 +1,7 @@
+{
+    "epsilon": 0.1,
+    "sigma_obs": 0.02,
+    "w_gp": 1.0,
+    "w_obs": 10.0,
+    "num_iterations": 20
+}

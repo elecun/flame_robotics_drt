@@ -1,0 +1,6 @@
+{
+    "safety_margin": 10.0,
+    "w_smooth": 1.0,
+    "w_collision": 20.0,
+    "max_iter": 20
+}

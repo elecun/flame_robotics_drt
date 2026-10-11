@@ -1,0 +1,5 @@
+{
+    "degree": 3,
+    "smoothing_factor": 0.5,
+    "num_samples": 100
+}

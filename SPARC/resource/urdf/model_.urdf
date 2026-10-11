@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<robot name="drt_robot">
+
+  <!-- Base Link / World Reference Frame -->
+  <link name="base_link"/>
+
+  <!-- ============================================================
+       Materials
+       ============================================================ -->
+  <material name="frame_positioner_mat">
+    <color rgba="0.65 0.65 0.70 1.0"/>
+  </material>
+
+  <material name="frame_r1_mat">
+    <color rgba="0.35 0.45 0.60 1.0"/>
+  </material>
+
+  <material name="frame_r2_mat">
+    <color rgba="0.60 0.40 0.35 1.0"/>
+  </material>
+
+
+  <!-- ============================================================
+       1. Positioner Frame
+       - STL Mesh: meshes/positioner_frame.stl (mm -> scale 0.001)
+       - Local Mesh Bounds (m): X[-0.0251, 8.2751], Y[0.5000, 2.2540], Z[-0.0006, 0.3010]
+       - OBB Collision Box:
+           size   = 8.3002 x 1.7540 x 0.3016
+           center = (4.1250, 1.3770, 0.1502)
+       ============================================================ -->
+  <link name="positioner_frame">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/positioner_frame.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="frame_positioner_mat"/>
+    </visual>
+    <collision>
+      <origin xyz="4.1250 1.3770 0.1502" rpy="0 0 0"/>
+      <geometry>
+        <box size="8.3002 1.7540 0.3016"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Joint: base_link -> positioner_frame
+       포지셔너 프레임은 전역 원점 기준 X=-0.575m, Y=+1.500m, Z=-0.322m에 위치합니다. -->
+  <joint name="joint_positioner_frame" type="fixed">
+    <parent link="base_link"/>
+    <child link="positioner_frame"/>
+    <origin xyz="-0.575 0.088 -0.322" rpy="0 0 0"/>
+  </joint>
+
+
+  <!-- ============================================================
+       2. R1 Linear Track Frame (Source side)
+       - STL Mesh: meshes/r1_lt_source_frame.stl (mm -> scale 0.001)
+       - Local Mesh Bounds (m): X[-3.604, 3.604], Y[-0.550, 0.550], Z[-0.020, 0.302]
+       - OBB Collision Box:
+           size   = 7.2080 x 1.1000 x 0.3220
+           center = (0.0000, 0.0000, 0.1410)
+       ============================================================ -->
+  <link name="r1_lt_source_frame">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/r1_lt_source_frame.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="frame_r1_mat"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.1410" rpy="0 0 0"/>
+      <geometry>
+        <box size="7.2080 1.1000 0.3220"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Joint: base_link -> r1_lt_source_frame
+       R1 선형 트랙의 좌측 끝(local X=-3.604m)을 전역(base_link) 원점에 맞춥니다. -->
+  <joint name="joint_r1_lt_source_frame" type="fixed">
+    <parent link="base_link"/>
+    <child link="r1_lt_source_frame"/>
+    <origin xyz="3.604 0.0 -0.322" rpy="0 0 0"/>
+  </joint>
+
+
+  <!-- ============================================================
+       3. R2 Linear Track Frame (DDA side)
+       - STL Mesh: meshes/r2_lt_dda_frame.stl (mm -> scale 0.001)
+       - Local Mesh Bounds (m): X[-3.604, 3.604], Y[-0.550, 0.550], Z[-0.020, 0.302]
+       - OBB Collision Box:
+           size   = 7.2080 x 1.1000 x 0.3220
+           center = (0.0000, 0.0000, 0.1410)
+       ============================================================ -->
+  <link name="r2_lt_dda_frame">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/r2_lt_dda_frame.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="frame_r2_mat"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.1410" rpy="0 0 0"/>
+      <geometry>
+        <box size="7.2080 1.1000 0.3220"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Joint: base_link -> r2_lt_dda_frame
+       R2 선형 트랙의 좌측 끝(local X=-3.604m)을 R1과 같이 전역 X=0에 맞춥니다.
+       프레임 위치는 X=+3.604m, Y=+3.000m, Z=-0.322m입니다. -->
+  <joint name="joint_r2_lt_dda_frame" type="fixed">
+    <parent link="base_link"/>
+    <child link="r2_lt_dda_frame"/>
+    <origin xyz="3.604 3.000 -0.322" rpy="0 0 0"/>
+  </joint>
+
+</robot>
