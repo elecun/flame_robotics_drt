@@ -2,6 +2,9 @@ import argparse
 import configparser
 import html
 import os
+import inspect
+import sys
+import threading
 import time
 import urllib.parse
 import xml.etree.ElementTree as ET
@@ -15,6 +18,10 @@ from viser.extras import ViserUrdf
 
 
 PROJECT_DIR = Path(__file__).resolve().parent
+CORE_DIRECTORY = PROJECT_DIR / "core"
+if str(CORE_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(CORE_DIRECTORY))
+from plugins.discovery import discover_plugins
 URDF_DIRECTORY = PROJECT_DIR / "resource" / "urdf"
 PCD_WORK_DIRECTORY = PROJECT_DIR / "work" / "pcd"
 WORLD_AXIS_LENGTH = 0.5
@@ -230,7 +237,8 @@ def main():
     args = parser.parse_args()
 
     # Load configuration
-    config = load_config(args.config)
+    config_path = Path(args.config).resolve()
+    config = load_config(str(config_path))
 
     # Read system and visualization settings.
     title = config.get("system", "title", fallback="SPARC")
@@ -456,31 +464,27 @@ def main():
     point_cloud_offset = [np.zeros(3, dtype=np.float32)]
     control_tabs = server.gui.add_tab_group()
     with control_tabs.add_tab("Simulation"):
+        with server.gui.add_folder("Configuration"):
+            configured_step_time = config.getint("simulation", "step_time_ms", fallback=20)
+            configured_step_time = min(1000, max(10, round(configured_step_time / 10) * 10))
+            simulation_speed = server.gui.add_slider(
+                "Simulation speed (ms)", min=10, max=1000, step=10,
+                initial_value=configured_step_time,
+            )
+        start_pose_input = server.gui.add_vector3("Start position (m)", (0.0, 0.0, 0.0), step=0.01)
+        target_pose_input = server.gui.add_vector3("Target position (m)", (0.2, 0.0, 0.0), step=0.01)
         with server.gui.add_folder("PCD"):
             point_cloud_upload = server.gui.add_upload_button(
                 "PCD/PLY File Open",
                 mime_type=".pcd,.ply",
                 hint="Choose a local PCD or PLY point-cloud file.",
             )
-        with server.gui.add_folder("Algorithm"):
-            pose_finder_dropdown = server.gui.add_dropdown(
-                "Pose Finder",
-                ("Select...",),
-                initial_value="Select...",
-            )
-            path_planner_dropdown = server.gui.add_dropdown(
-                "Path Planner",
-                ("Select...",),
-                initial_value="Select...",
-            )
-            optimizer_dropdown = server.gui.add_dropdown(
-                "Optimizer",
-                ("Select...",),
-                initial_value="Select...",
-            )
+        with server.gui.add_folder("Status"):
+            simulation_status = server.gui.add_text("Current status", initial_value="Idle", disabled=True)
         run_button = server.gui.add_button("Run", color="blue")
         stop_button = server.gui.add_button("Stop", color="red")
-    control_tabs.add_tab("Auto")
+    with control_tabs.add_tab("Auto"):
+        pass
     with control_tabs.add_tab("Manual"):
         with server.gui.add_folder("Control"):
             for index, joint_name in enumerate(joint_names):
@@ -488,11 +492,7 @@ def main():
                     joint_name, (-np.pi, np.pi, 0.01, "rad")
                 )
                 slider = server.gui.add_slider(
-                    joint_name,
-                    lower,
-                    upper,
-                    step,
-                    float(joint_values[index]),
+                    joint_name, lower, upper, step, float(joint_values[index]),
                     hint=f"{joint_name} ({unit})",
                 )
 
@@ -506,35 +506,152 @@ def main():
 
                 bind_joint_slider(slider, index)
 
+    plugins = discover_plugins(PROJECT_DIR / "core" / "plugins")
     with control_tabs.add_tab("Settings"):
+        with server.gui.add_folder("Plugins"):
+            plugin_dropdowns = {}
+            for category, label in (
+                ("pose_finder", "Pose Finder"),
+                ("path_planner", "Path Planner"),
+                ("optimizer", "Optimizer"),
+            ):
+                options = tuple(plugins[category])
+                configured = config.get("plugins", category, fallback="").strip()
+                selected = configured if configured in options else ""
+                plugin_dropdowns[category] = server.gui.add_dropdown(
+                    label, ("", *options), initial_value=selected
+                )
+            save_plugins_button = server.gui.add_button("Save & Update", color="blue")
+
+        @save_plugins_button.on_click
+        def _save_plugin_settings(_event) -> None:
+            if not config.has_section("plugins"):
+                config.add_section("plugins")
+            for category, dropdown in plugin_dropdowns.items():
+                config.set("plugins", category, dropdown.value if dropdown.value in plugins[category] else "")
+            with config_path.open("w", encoding="utf-8") as config_file:
+                config.write(config_file)
+            modal = server.gui.add_modal("설정 저장")
+            with modal:
+                server.gui.add_markdown("설정이 저장되었습니다.")
+                close_button = server.gui.add_button("확인")
+            @close_button.on_click
+            def _close_saved_modal(_) -> None:
+                modal.close()
+
         with server.gui.add_folder("Visualization"):
             collision_obb_checkbox = server.gui.add_checkbox(
-                "Show collision model",
-                initial_value=show_collision_obb,
+                "Show collision model", initial_value=show_collision_obb,
                 hint="Display collision geometry from the loaded URDF.",
             )
             joint_coordinates_checkbox = server.gui.add_checkbox(
-                "Show joint coordinates",
-                initial_value=False,
+                "Show joint coordinates", initial_value=False,
                 hint="Display coordinate axes at every movable joint origin.",
             )
             model_transparency_slider = server.gui.add_slider(
-                "Model transparency",
-                min=0.0,
-                max=1.0,
-                step=0.01,
+                "Model transparency", min=0.0, max=1.0, step=0.01,
                 initial_value=0.0,
                 hint="Adjust the transparency of URDF visual and collision meshes.",
             )
         with server.gui.add_folder("PCD"):
-            point_size_input = server.gui.add_number(
-                "Point Size", 0.015, min=0.001, max=1.0, step=0.001
-            )
+            point_size_input = server.gui.add_number("Point Size", 0.015, min=0.001, max=1.0, step=0.001)
             point_size_set_button = server.gui.add_button("Set")
-            point_offset_input = server.gui.add_vector3(
-                "XYZ Offset", (0.0, 0.0, 0.0), step=0.001
-            )
+            point_offset_input = server.gui.add_vector3("XYZ Offset", (0.0, 0.0, 0.0), step=0.001)
             point_offset_set_button = server.gui.add_button("Set")
+
+    # Simulation controls run algorithms away from Viser's event loop.
+    simulation_stop = threading.Event()
+    simulation_thread = [None]
+    simulation_path_handle = [None]
+
+    @run_button.on_click
+    def _run_simulation(_event) -> None:
+        if simulation_thread[0] is not None and simulation_thread[0].is_alive():
+            return
+        category_values = {key: dropdown.value for key, dropdown in plugin_dropdowns.items()}
+        planner_name = category_values["path_planner"]
+        if not planner_name:
+            simulation_status.value = "No path planner selected"
+            return
+        simulation_stop.clear()
+        if simulation_path_handle[0] is not None:
+            simulation_path_handle[0].remove()
+            simulation_path_handle[0] = None
+        start = np.asarray((*start_pose_input.value, 0.0, 0.0, 0.0), dtype=float)
+        goal = np.asarray((*target_pose_input.value, 0.0, 0.0, 0.0), dtype=float)
+
+        def execute_simulation() -> None:
+            try:
+                simulation_status.value = f"Initializing {planner_name}"
+                planner_class = plugins["path_planner"][planner_name]
+                planner = planner_class()
+                simulation_status.value = f"Planning: {planner_name}"
+                generate_parameters = inspect.signature(planner.generate).parameters
+
+                def report_planner_progress(*_args) -> None:
+                    if simulation_stop.is_set():
+                        raise InterruptedError("Simulation stopped")
+                    simulation_status.value = f"Planning: {planner_name}"
+
+                kwargs = (
+                    {"step_callback": report_planner_progress}
+                    if "step_callback" in generate_parameters
+                    else {}
+                )
+                path = planner.generate(start, goal, **kwargs)
+                if simulation_stop.is_set():
+                    simulation_status.value = "Stopped"
+                    return
+                optimizer_name = category_values["optimizer"]
+                if optimizer_name and path:
+                    simulation_status.value = f"Optimizing: {optimizer_name}"
+                    optimizer = plugins["optimizer"][optimizer_name]()
+                    path = optimizer.optimize(path, planner)
+                if not path:
+                    simulation_status.value = "No path found"
+                    return
+                executed_points = []
+                for waypoint_index, waypoint in enumerate(path):
+                    if simulation_stop.is_set():
+                        simulation_status.value = "Stopped"
+                        break
+                    executed_points.append(np.asarray(waypoint[:3], dtype=np.float32))
+                    if simulation_path_handle[0] is not None:
+                        simulation_path_handle[0].remove()
+                    simulation_path_handle[0] = server.scene.add_point_cloud(
+                        "/SimulationPath",
+                        points=np.asarray(executed_points, dtype=np.float32),
+                        colors=np.tile(
+                            np.array([[20, 110, 220]], dtype=np.uint8),
+                            (len(executed_points), 1),
+                        ),
+                        point_size=0.012,
+                        point_shape="circle",
+                        precision="float32",
+                    )
+                    simulation_status.value = f"Executing trajectory: {waypoint_index + 1}/{len(path)}"
+                    if simulation_stop.wait(simulation_speed.value / 1000.0):
+                        simulation_status.value = "Stopped"
+                        break
+                else:
+                    simulation_status.value = f"Completed: {len(path)} waypoints"
+            except Exception as error:
+                if simulation_stop.is_set():
+                    simulation_status.value = "Stopped"
+                else:
+                    simulation_status.value = f"Error: {error}"
+                    print(f"Simulation failed: {error}")
+
+        simulation_thread[0] = threading.Thread(
+            target=execute_simulation, name="sparc-simulation", daemon=True
+        )
+        simulation_thread[0].start()
+
+    @stop_button.on_click
+    def _stop_simulation(_event) -> None:
+        simulation_stop.set()
+        if simulation_thread[0] is not None and simulation_thread[0].is_alive():
+            simulation_status.value = "Stopping simulation"
 
     # A movable status panel with separate robot and system views.
     status_panel = server.gui.add_panel()

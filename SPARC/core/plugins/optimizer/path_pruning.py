@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import os
+import json
 
 # Adjust path to import OptimizerBase
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../pluginbase')))
