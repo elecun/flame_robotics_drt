@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {Group,Vector3} from 'three';
+import {addRobotCoordinates} from '../core/robot-coordinates.mjs';
+const root=new Group(),joint=new Group();joint.name='joint';root.add(joint);root.joints={joint};
+const [axis]=addRobotCoordinates(root);
+assert.equal(axis.visible,false);assert.equal(axis.parent,joint);
+joint.position.set(1,2,3);joint.rotation.z=Math.PI/2;root.updateMatrixWorld(true);
+assert.ok(axis.localToWorld(new Vector3(1,0,0)).distanceTo(new Vector3(1,3,3))<1e-8);
+const hits=[];axis.raycast(null,hits);assert.equal(hits.length,0);
+console.log('PASS: joint coordinate frame follows translation/rotation and does not intercept picking');

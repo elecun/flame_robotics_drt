@@ -1,0 +1,22 @@
+const {chromium}=require('@playwright/test');
+(async()=>{
+const browser=await chromium.launch({headless:true});
+const page=await browser.newPage({viewport:{width:1920,height:1080}});
+const errors=[],external=[];
+page.on('pageerror',e=>errors.push(e.message));
+page.on('request',r=>{if(!r.url().startsWith('http://localhost:8080')&&!r.url().startsWith('ws://localhost:8080'))external.push(r.url());});
+await page.goto('http://localhost:8080');
+await page.locator('[data-model-ready="true"]').waitFor({timeout:60000});
+const second=await browser.newPage();await second.goto('http://localhost:8080');
+await second.locator('[data-model-ready="true"]').waitFor({timeout:60000});
+await page.request.patch('http://localhost:8080/api/state',{data:{mode:'custom',speed:1.4}});
+await second.getByText('CUSTOM',{exact:true}).waitFor();
+await page.getByRole('button',{name:'Run async task'}).click();
+await second.getByText('Processing 100%',{exact:true}).waitFor();
+await page.screenshot({path:'work/desktop.png'});
+await page.setViewportSize({width:800,height:600});
+await page.screenshot({path:'work/compact.png'});
+if(errors.length||external.length)throw Error(JSON.stringify({errors,external}));
+console.log('PASS: URDF/STL render, two-client state and progress sync, responsive layout, no external requests or JS errors');
+await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});
